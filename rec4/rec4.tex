@@ -481,6 +481,26 @@ scanf("%d", &dval);
     \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]{Conversion between Pointers and Integers}
+    \begin{cpp}
+int i = 42;
+int j = &i;
+printf("%d\n", j);
+    \end{cpp}
+    \begin{itemize}
+        \item This will assign the address of \ttt{i} to \ttt{j} as an integer value, and then print it in decimal.
+        \pause
+        \item \red{AVOID such conversion!}
+        \begin{itemize}
+            \item Its behavior is implementation-defined.
+            \item It may have other issues...
+            \item It is forbidden in C++.
+        \end{itemize}
+        \pause
+        \item If you want to see the difference between two pointers, use \blue{subtraction}!
+    \end{itemize}
+\end{frame}
+
 \subsection{Summary}
 
 \begin{frame}{Summary}
