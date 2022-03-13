@@ -1,0 +1,5 @@
+- Setup of the build environment (MinGW+Clang+VSCode, with Code Runner).
+- Language Standards (a brief history).
+- Arithmetic types.
+- Function (mainly the `main` function). (For next time)
+- Operator precedence and associativity.

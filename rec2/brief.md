@@ -1,0 +1,5 @@
+- Function (mainly the `main` function, from recitation 1).
+- Operators.
+- IO (`scanf`, `printf`, some other issues)
+- Type conversion: implicit casting and explicit type casting.
+- Control flow: if-else (dangling else), switch-case, while, for, goto
