@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usepackage{amsmath}
 \usepackage{amsthm}
@@ -462,22 +462,19 @@ fun(arr);
     \end{itemize}
     \pause
     \begin{question}
-        How does \ttt{scanf} work?
+        How does \ttt{malloc} return a pointer?
     \end{question}
 \end{frame}
 
 \begin{frame}[fragile]{Conversions between Pointers}
     \begin{cpp}
-double dval = 3.14;
-printf("%d\n", dval);
-scanf("%d", &dval);
+void *malloc(size_t size);
+int *arr = (int *)malloc(sizeof(int) * n);
     \end{cpp}
-    \pause
     \begin{itemize}
-        \item \ttt{printf}: conversion from \bluett{double} to \bluett{int}, which is safe, though may lose precision.
-        \item \ttt{scanf}: conversion from \bluett{double }\ttt{*} to \bluett{int }\ttt{*}, which is \red{undefined behavior}.
-        \pause
-        \item \ttt{scanf} has no idea what types of pointers you pass to it, so it first uses \bluett{void }\ttt{*} for every pointer, and then converts them according to the format string.
+        \item \ttt{malloc} does not know what type of data will be stored, so it returns a \bluett{void }\ttt{*} pointer.
+        \item The conversion from \bluett{void }\ttt{*} to pointer of other types can happen implicitly in C,
+        \item but it is recommended to do it explicitly.
     \end{itemize}
 \end{frame}
 
