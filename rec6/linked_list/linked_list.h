@@ -1,5 +1,5 @@
-#ifndef LINKED_LIST_C_H
-#define LINKED_LIST_C_H
+#ifndef _LINKED_LIST_H_
+#define _LINKED_LIST_H_
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -123,6 +123,11 @@ inline int reduce_linked_list(Linked_list *list, int (*function)(int, int)) {
   return result;
 }
 
+inline void for_each_linked_list(Linked_list *list, void (*function)(int)) {
+  for (Node *p = list->head; p; p = p->next)
+    function(p->value);
+}
+
 inline bool equal_linked_list(Linked_list *lhs, Linked_list *rhs) {
   if (lhs->length != rhs->length)
     return false;
@@ -142,4 +147,4 @@ inline bool less_than_linked_list(Linked_list *lhs, Linked_list *rhs) {
   return lhs->length < rhs->length;
 }
 
-#endif // LINKED_LIST_C_H
+#endif // _LINKED_LIST_H_
