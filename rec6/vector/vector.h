@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* For in-class demonstration. The functions in this header do not check or
+ * report any exception or error.
+ */
+
 typedef struct {
   size_t size, capacity;
   int *data;
@@ -38,7 +42,8 @@ inline Vector *vector_create() {
 inline Vector *vector_create_from_array(int *arr, size_t n) {
   Vector *ret = vector_create();
   ret->data = (int *)malloc(sizeof(int) * n);
-  memcpy(ret->data, arr, sizeof(int) * n);
+  for (size_t i = 0; i < n; ++i)
+    ret->data[i] = arr[i];
   ret->size = n;
   ret->capacity = n;
   return ret;
@@ -73,28 +78,49 @@ inline Vector *vector_create_reserve(size_t n) {
  */
 inline void vector_reallocate(Vector *vector, size_t new_cap) {
   int *new_data = (int *)malloc(sizeof(int) * new_cap);
-  memcpy(new_data, vector->data, vector->size * sizeof(int));
+  for (size_t i = 0; i < vector->size; ++i)
+    new_data[i] = vector->data[i];
   free(vector->data);
   vector->capacity = new_cap;
   vector->data = new_data;
 }
 
+/**
+ * @brief Reallocate a larger block of memory if necessary.
+ *
+ * @param vector Points to the %Vector that might need reallocation.
+ * This function checks whether a given %Vector is full, and reallocate a block
+ * of memory twice as large as the original one if it is full.
+ */
 inline void vector_check_and_realloc(Vector *vector) {
   if (vector->size == vector->capacity)
     vector_reallocate(vector, vector->capacity ? vector->capacity * 2 : 1);
 }
 
+/**
+ * @brief Frees the memory of a %Vector.
+ *
+ * @param vector Points to the %Vector that needs destruction.
+ * This function frees not only the data of the given %Vector, but also the
+ * memory storing the %Vector itself.
+ */
 inline void vector_destroy(Vector *vector) {
-  if (vector) {
-    free(vector->data);
-    free(vector);
-  }
+  free(vector->data);
+  free(vector);
 }
 
-// Be careful with self-assignment.
+/**
+ * @brief Assignment of %Vectors.
+ *
+ * @param dest Points to the %Vector being assigned to.
+ * @param source Points to the %Vector assigned with.
+ * After assignment, *dest is a copy of *source.
+ */
 inline void vector_assign(Vector *dest, Vector *source) {
+  // Be careful with self-assignment.
   int *new_data = (int *)malloc(sizeof(int) * source->capacity);
-  memcpy(new_data, source->data, source->size * sizeof(int));
+  for (size_t i = 0; i < source->size; ++i)
+    new_data[i] = source->data[i];
   free(dest->data);
   dest->size = source->size;
   dest->capacity = source->capacity;
@@ -116,6 +142,10 @@ inline int vector_access(Vector *vector, size_t n) {
 
 inline void vector_shrink_to_fit(Vector *vector) {
   vector_reallocate(vector, vector->size);
+}
+
+inline void vector_clear(Vector *vector) {
+  vector->size = 0;
 }
 
 #endif // _VECTOR_H_
