@@ -1,0 +1,2 @@
+- Vector part: introduce briefly. Only show `vector_crate`, `vector_destroy`, `vector_reallocate`, `vector_push_back`.
+- Linked-list part: Show coding the operations related to the structure: create, destroy, insert-after, erase-after, push-front, pop-front.

@@ -130,4 +130,53 @@ data = new_data;
     \end{question}
 \end{frame}
 
+\begin{frame}{Another Idea}
+    \begin{itemize}
+        \item What if we don't store data in contiguous memory?
+        \pause
+        \item Suppose we have an element \(x\) stored somewhere.
+        \item When another element \(y\) comes, just allocate the memory for \(y\), but let \(x\) \textit{somehow} \textbf{record} the location of \(y\).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Linked-lists}
+    \begin{cpp}
+typedef struct _record_ {
+  int data;
+  struct _record_ *next_loc;
+} Recorded_data;
+    \end{cpp}
+    \pause
+    Such data structure formed by linking the elements one after another is called the \blue{linked-list}.
+\end{frame}
+
+\begin{frame}[fragile]{Linked-lists}
+    Pros and cons?
+    \pause
+    \begin{itemize}
+        \item Linked-lists are not only \blue{dynamically growing}, but also allowing elements to be inserted/removed anywhere.
+        \begin{itemize}
+            \item In contiguous memory, you need to move all the elements afterwards if you want to insert or remove something in the middle.
+        \end{itemize}
+        \pause
+        \item However, random-access of data is not supported.
+        \pause
+        \item Need some changes to allow \blue{reverse traversal} (e.g. Doubly-linking).
+    \end{itemize}
+    \pause
+    You will learn more in CS101: Algorithm and Data Structures.
+\end{frame}
+
+\begin{frame}{In the End...}
+    \begin{itemize}
+        \item What if the \textbf{type} of data to be stored is unknown?
+        \item How can we store different types of data in one list?
+        \item The functions `\ttt{create}' and `\ttt{destroy}' should be called by the user. How can we make them run automatically?
+        \item Assignment and comparison need special named-functions. Can we use \textbf{built-in operators} naturally?
+        \item How can we handle potential \textbf{errors}, like running out of memory or accessing invalid position?
+    \end{itemize}
+    \pause
+    \rightline{\blue{Enter the C++ world to find the answers!}}
+\end{frame}
+
 \end{document}

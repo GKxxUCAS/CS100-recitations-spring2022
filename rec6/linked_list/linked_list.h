@@ -1,9 +1,9 @@
 #ifndef _LINKED_LIST_H_
 #define _LINKED_LIST_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 typedef struct _node_ {
   int value;
@@ -71,6 +71,8 @@ inline void linked_list_erase_after(Linked_list *list, Node *pos) {
   --list->length;
 }
 
+/* -------------------------------------------------------------------------- */
+
 inline size_t linked_list_count(Linked_list *list, int want) {
   size_t cnt = 0;
   for (Node *p = list->head; p; p = p->next)
@@ -86,7 +88,8 @@ inline Linked_list *reversed_linked_list(Linked_list *list) {
   return ret;
 }
 
-inline Linked_list *filter_linked_list(Linked_list *list, bool (*condition)(int)) {
+inline Linked_list *filter_linked_list(Linked_list *list,
+                                       bool (*condition)(int)) {
   Linked_list *ret = linked_list_create();
   Node *tail = NULL;
   for (Node *p = list->head; p; p = p->next)
@@ -102,7 +105,7 @@ inline Linked_list *filter_linked_list(Linked_list *list, bool (*condition)(int)
   return ret;
 }
 
-inline Linked_list *map_linked_list(Linked_list *list, int (*mapping)(int)){
+inline Linked_list *map_linked_list(Linked_list *list, int (*mapping)(int)) {
   Linked_list *ret = linked_list_create();
   Node *tail = NULL;
   for (Node *p = list->head; p; p = p->next)
