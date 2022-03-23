@@ -1,0 +1,133 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{../cppenv}
+
+\usepackage{../recdefs}
+
+\usetheme{Antibes}
+
+\title{CS100 Recitation 6}
+\subtitle{Dynamically Expanding Storage}
+\author{GKxx}
+\date{March 28, 2022}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}{Motivation}
+    \begin{itemize}
+        \item Store a \blue{compile-time-determined} amount of data
+        \item Store a \blue{runtime-determined} amount of data
+        \item Store an \blue{unknown} amount of data
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Motivation}
+    \begin{itemize}
+        \item Store a \blue{compile-time-determined} amount of data:\\
+        \red{Built-in arrays}.
+        \item Store a \blue{runtime-determined} amount of data:\\
+        \red{Allocate memory on heap (\ttt{malloc}, \ttt{free}, etc.)}.
+        \item Store an \blue{unknown} amount of data?
+        \pause
+        \begin{itemize}
+            \item Suppose we want to create a \blue{list} by appending \(n\) elements one-by-one, as in \ttt{Python}...
+            \pause
+            \item We need some kind of storage that can \red{dynamically grow}.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{What can we do?}
+    \begin{itemize}
+        \item We can allocate a specific number of bytes of memory on heap.
+        \item We \textbf{cannot} specify the \blue{exact location} of the memory allocated. \red{(Why?)}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{A Basic Idea}
+    Suppose we have stored \(n\) elements in some \blue{contiguous} memory \ttt{p[0]}, \dots, \ttt{p[n-1]}. When the \((n+1)\)-th element \(x\) comes...
+    \begin{itemize}
+        \item We cannot force the system to allocate the space at \ttt{p[n]}.
+        \pause
+        \item Naive idea:
+        \begin{enumerate}
+            \item Allocate another block of memory \ttt{q[0]}, \dots, \ttt{q[n]} that can contain \(n+1\) elements.
+            \item Copy the original \(n\) elements to the new place.
+            \item Place \(x\) at \ttt{q[n]}.
+            \pause
+            \item Are we done?
+        \end{enumerate}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{A Basic Idea}
+    Suppose we have stored \(n\) elements in some \blue{contiguous} memory \ttt{p[0]}, \dots, \ttt{p[n-1]} \textbf{(dynamically allocated)}. When the \((n+1)\)-th element \(x\) comes...
+    \begin{itemize}
+        \item We cannot force the system to allocate the space at \ttt{p[n]}.
+        \item Naive idea:
+        \begin{enumerate}
+            \item Allocate another block of memory \ttt{q[0]}, \dots, \ttt{q[n]} that can contain \(n+1\) elements.
+            \item Copy the original \(n\) elements to the new place.
+            \item Place \(x\) at \ttt{q[n]}.
+            \item \red{\ttt{free(p)}!}
+        \end{enumerate}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{A Basic Idea}
+    \begin{cpp}
+int *new_data
+    = (int *)malloc(sizeof(int) * (n + 1));
+for (int i = 0; i < n; ++i)
+  new_data[i] = data[i];
+new_data[n] = x;
+free(data);
+data = new_data;
+    \end{cpp}
+    \pause
+    \begin{question}
+        How many times of copying will happen if we append \(n\) elements one-by-one?
+    \end{question}
+\end{frame}
+
+\begin{frame}{Reduce Copying}
+    The number of times of copying that will happen is
+    \[\sum_{i=1}^n(i-1)=\frac{n(n-1)}2,\]
+    which is \red{quadratic} in \(n\). \gray{(Time complexity: \(O(n^2)\))}
+    \pause
+    \begin{itemize}
+        \item What if we allocate more space each time?
+        \pause
+        \item If we allocate space for \red{\(2n\) elements}, we don't need to copy anything when appending the \((n+1)\)-th, \((n+2)\)-th, \dots, \(2n\)-th elements.
+        \pause
+        \begin{itemize}
+            \item \(2n\) and \(n\) are not so different for computers. Don't worry!
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{A Better Way}
+    If we append \blue{\(n=2^m\) elements} one-by-one, the number of times of copying is
+    \[\sum_{i=0}^{m-1}2^i=2^m-1=n-1,\]
+    which is \red{linear} in \(n\).
+    \begin{itemize}
+        \item This idea is adopted in the \blue{C++ \ttt{vector}} library.
+    \end{itemize}
+    \pause
+    \begin{question}
+        Can we do better than linear time?
+    \end{question}
+\end{frame}
+
+\end{document}
