@@ -1,16 +1,17 @@
-\usepackage{listings}
+\usepackage{listings, xcolor}
 
 \lstset{
-    columns = fixed,       
-    % numbers = left,                                      % show line number on the left
+    columns = fixed,
+    basewidth = {0.5em},
+    % numbers = left,
     breaklines = true,
-    backgroundcolor = \color{white},                       % set the background color
-    keywordstyle = \color[RGB]{40,40,255},                 % set the keyword color
-    numberstyle = \footnotesize\color{darkgray},           % set the style of line numbers
-    commentstyle = \color[RGB]{2,128,9},                   % set the style of comments
+    backgroundcolor = \color{white},
+    keywordstyle = \color[RGB]{40, 40, 255},
+    numberstyle = \footnotesize\color{darkgray},
+    commentstyle = \ttfamily\color{violet},
     basicstyle = \small\ttfamily,
-    stringstyle = \ttfamily\color[RGB]{128,0,0},           % set the style of string literals
-    showstringspaces = false,                              % hide the spaces in string literals
+    stringstyle = \ttfamily\color[RGB]{128, 0, 0},
+    showstringspaces = false,
     language = {[11]C++},
 }
 

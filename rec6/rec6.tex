@@ -1,11 +1,6 @@
 \documentclass{beamer}
 
 \usepackage{amsmath}
-\usepackage{amsthm}
-\usepackage{float}
-\usepackage{graphicx}
-\usepackage{color}
-\usepackage{url}
 
 \usepackage{../cppenv}
 
@@ -87,8 +82,7 @@
 
 \begin{frame}[fragile]{A Basic Idea}
     \begin{cpp}
-int *new_data
-    = (int *)malloc(sizeof(int) * (n + 1));
+int *new_data = (int *)malloc(sizeof(int) * (n + 1));
 for (size_t i = 0; i < n; ++i)
   new_data[i] = data[i];
 new_data[n] = x;

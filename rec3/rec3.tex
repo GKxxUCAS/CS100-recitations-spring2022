@@ -1,22 +1,12 @@
 \documentclass{beamer}
 
-\usepackage{amsmath}
-\usepackage{amsthm}
 \usepackage{float}
 \usepackage{graphicx}
-\usepackage{color}
 \usepackage{url}
 
 \usepackage{../cppenv}
 
-\newcommand{\red}[1]{\textcolor{red}{#1}}
-\newcommand{\blue}[1]{\textcolor{blue}{#1}}
-
-\newcommand{\ttt}[1]{\texttt{#1}}
-\newcommand{\bluett}[1]{\blue{\ttt{#1}}}
-\newcommand{\redtt}[1]{\red{\ttt{#1}}}
-
-\newenvironment{question}{\begin{alertblock}{Question}}{\end{alertblock}}
+\usepackage{../recdefs}
 
 \usetheme{Berlin}
 \usecolortheme{seahorse}
@@ -28,7 +18,7 @@
 \begin{document}
 
 \begin{frame}
-    \titlepage
+    \maketitle
 \end{frame}
 
 \AtBeginSection[]{

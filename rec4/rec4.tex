@@ -1,26 +1,12 @@
 \documentclass[handout]{beamer}
 
-\usepackage{amsmath}
-\usepackage{amsthm}
 \usepackage{float}
 \usepackage{graphicx}
-\usepackage{color}
 \usepackage{url}
 
 \usepackage{../cppenv}
 
-\newcommand{\red}[1]{\textcolor{red}{#1}}
-\newcommand{\blue}[1]{\textcolor{blue}{#1}}
-\newcommand{\gray}[1]{\textcolor{gray}{#1}}
-
-\newcommand{\ttt}[1]{\texttt{#1}}
-\newcommand{\bluett}[1]{\blue{\ttt{#1}}}
-\newcommand{\redtt}[1]{\red{\ttt{#1}}}
-
-\newenvironment{question}{\begin{alertblock}{Question}}{\end{alertblock}}
-\theoremstyle{definition}
-\newtheorem{thm}{Theorem}
-\newtheorem{dfn}{Definition}
+\usepackage{../recdefs}
 
 \usetheme{Warsaw}
 \usecolortheme{wolverine}
@@ -32,7 +18,7 @@
 \begin{document}
 
 \begin{frame}
-    \titlepage
+    \maketitle
 \end{frame}
 
 \AtBeginSection[]{
