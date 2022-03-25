@@ -9,7 +9,6 @@
 \usetheme{Antibes}
 
 \title{CS100 Recitation 6}
-\subtitle{Dynamically Expanding Storage}
 \author{GKxx}
 \date{March 28, 2022}
 
@@ -18,6 +17,8 @@
 \begin{frame}
     \maketitle
 \end{frame}
+
+\section{Dynamically Expanding Storage}
 
 \begin{frame}{Motivation}
     \begin{itemize}
@@ -49,6 +50,8 @@
         \item We \textbf{cannot} specify the \blue{exact location} of the memory allocated. \red{(Why?)}
     \end{itemize}
 \end{frame}
+
+\subsection{Vector}
 
 \begin{frame}{A Basic Idea}
     Suppose we have stored \(n\) elements in some \blue{contiguous} memory \ttt{p[0]}, \dots, \ttt{p[n-1]}. When the \((n+1)\)-th element \(x\) comes...
@@ -124,6 +127,8 @@ data = new_data;
     \end{question}
 \end{frame}
 
+\subsection{Linked-list}
+
 \begin{frame}{Another Idea}
     \begin{itemize}
         \item What if we don't store data in contiguous memory?
@@ -171,6 +176,203 @@ typedef struct _record_ {
     \end{itemize}
     \pause
     \rightline{\blue{Enter the C++ world to find the answers!}}
+\end{frame}
+
+\section{Entering C++}
+
+\begin{frame}{Headers}
+    \begin{itemize}
+        \item The C++ standard library headers are named without extensions.
+        \item C++ standard library also contains the C standard library, with some minor changes...\\
+        \ttt{<name.h>}\quad\(\Longrightarrow\)\quad\ttt{<cname>}.
+        \item We should \textbf{use the C++-style headers} in C++ as they fit better with C++ programs.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Namespaces}
+    \begin{itemize}
+        \item C++ has a large standard library. To avoid name collision, all the names defined in the standard library are defined in the \bluett{namespace }\ttt{std}.
+        \item To use them, add \ttt{std::}before a name.
+    \end{itemize}
+    \pause
+    \begin{cpp}
+// Example: A+B in C++
+#include <iostream>
+
+int main() {
+  int a, b;
+  std::cin >> a >> b;
+  std::cout << a + b << std::endl;
+  return 0;
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Don't be lazy...}
+    \begin{itemize}
+        \item Many people (especially OIers) write this
+        \begin{cpp}
+#include <bits/stdc++.h>
+        \end{cpp}
+        so that everything in the standard library is \bluett{\#include}d.
+        \pause
+        \begin{itemize}
+            \item \ttt{<bits/stdc++.h>} is not part of standard C++. There is no such file on some implementations (like Mac OS X).
+            \item Use what you really need.
+            \item \textbf{It is your task to remember} what library facility you are using and where it is defined.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{using} Declarations and Directives}
+    A \bluett{using} \blue{declaration} introduces one name from a namespace to the current scope.
+    \begin{cpp}
+using std::cin;
+using std::cout;
+    \end{cpp}
+    \pause
+    A \bluett{using} \blue{directive} makes all the names in a namespace visible without qualification.
+    \begin{cpp}
+using namespace std;
+    \end{cpp}
+    \begin{itemize}
+        \item It is \textbf{not suggested} to use \bluett{using} directives, especially in header files. They reintroduce the name collision problems.
+        \item \textbf{It is your task to remember} whether the name you are using is defined in the standard library.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Built-in Types}
+    Better support for boolean type:
+    \begin{itemize}
+        \item \bluett{bool} is a built-in type, not defined in any extra headers.
+        \item \ttt{true} and \ttt{false} are of the type \bluett{bool}.
+        \item The return-type of logical and relation operators is \bluett{bool}, instead of \bluett{int}.
+    \end{itemize}
+    \pause
+    Better support for character and string literals:
+    \begin{itemize}
+        \item Character literals like \ttt{'a'} are of type \bluett{char}, not \bluett{int}.
+        \item String literals like \ttt{"Hello"} are of type \bluett{const char }\ttt{[N+1]}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Type System}
+    C++ is \blue{strongly-typed}.
+    \begin{itemize}
+        \item Dangerous type conversions \textbf{must} happen explicitly.
+        \pause
+        \begin{itemize}
+            \item Conversion between different pointers.
+            \item Casting away low-level \bluett{const}.
+            \item Conversion between pointers and integers.
+        \end{itemize}
+        \pause
+        \item Remember to use \blue{named type-casting operators}: \bluett{static\_cast}, \bluett{const\_cast}, \bluett{reinterpret\_cast}, \bluett{dynamic\_cast}.
+    \end{itemize}
+    \pause
+    C++ is \blue{statically-typed}.
+    \begin{itemize}
+        \item Type of everything should be determined during compile-time.
+        \item Variable-length arrays are \textbf{forbidden}, because they have runtime types.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Lvalues and Rvalues}
+    Every expression in C++ is either an \blue{lvalue} or an \blue{rvalue}.
+    \begin{itemize}
+        \item When an object is used as an rvalue, we are in fact using its value (contents). When an object is used as an lvalue, we are in fact using the object.
+    \end{itemize}
+    \pause
+    Examples:
+    \begin{itemize}
+        \item \ttt{++i} returns an lvalue, while \ttt{i++} returns an rvalue (the copy of the original value).
+        \pause
+        \item \ttt{*p} (where \ttt{p} is a pointer) returns an lvalue, which is the exact object that \ttt{p} points to.
+        \item \ttt{a[i]} returns an lvalue, which is the exact object indexed \ttt{i}.
+        \pause
+        \item \ttt{a = b} returns an lvalue, which is the object on the left-hand side. In this sense, we can write \ttt{a = b = c}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{References}
+    Reference is an \textbf{alia}.
+    \begin{cpp}
+int i = 42;
+int &r = i; // r is a reference, which is bound to i.
+    \end{cpp}
+    \pause
+    After that, any operation on \ttt{r} is in fact happening on \ttt{i}.
+    \begin{cpp}
+++r;    // increase the value of i.
+std::cout << r << "\n"; // output the value of i.
+    \end{cpp}
+    \pause
+    \begin{itemize}
+        \item References must be explicitly initialized.
+        \item After initialization, the reference cannot be bound to any other object.
+        \item There's no `null references' or `dangling references'. References are safe and convenient to use.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{References}
+    Non-const references must be bound to \blue{lvalues}:
+    \begin{itemize}
+        \item References can be bound to normal variables, pointers, arrays, functions.
+        \begin{cpp}
+int i = 42, j = 50;
+int *p = &i;
+int *&r = p;    // bound to a pointer p.
+r = &j;         // p is now pointing to j.
+        \end{cpp}
+        \pause
+        \item References are quite useful in function parameter declarations.
+        \begin{cpp}
+void swap(int &a, int &b) {
+  int tmp = a;
+  a = b;
+  b = tmp;
+}
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{References}
+    \begin{cpp}
+void print_array10(int (&arr)[10]) {
+  for (int i = 0; i < 10; ++i)
+    std::cout << arr[i] << ' ';
+}
+// in main
+int a[10] = {0};
+print_array10(a);   // OK.
+int b[5] = {0};
+print_array10(b);   // Error.
+int i = 42;
+print_array10(&i);  // Error.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{References}
+    \bluett{const} references: particularly refer to low-level \bluett{const} references.
+    \begin{itemize}
+        \item Reference is not an object itself. There's no references for references.
+        \item You can't change which object a reference is bound to, so every reference is `top-level \bluett{const}' in semantics.
+        \pause
+        \item A \bluett{const} reference can be bound to either a \bluett{const} object or a non-\bluett{const} object.
+        \item Like low-level \bluett{const} pointers, you cannot modify the object through a \bluett{const} reference.
+        \pause
+        \item \bluett{const} references can also be bound to \textbf{rvalues}!
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{References}
+    \bluett{const} references are widely used for C++ function parameters.
+    \begin{itemize}
+        \item It accepts both lvalues and rvalues.
+        \item \textbf{It avoids copying}.
+    \end{itemize}
+    Whenever your parameter should remain unchanged, just declare it as a \bluett{const} reference!\\
+    \(\Rightarrow\) \textit{Effective C++}, Item 3: Use \ttt{const} whenever possible.
 \end{frame}
 
 \end{document}
