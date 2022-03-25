@@ -12,6 +12,12 @@
 \author{GKxx}
 \date{March 28, 2022}
 
+\AtBeginSection{
+    \begin{frame}{Contents}
+        \tableofcontents[currentsection]
+    \end{frame}
+}
+
 \begin{document}
 
 \begin{frame}
@@ -180,6 +186,8 @@ typedef struct _record_ {
 
 \section{Entering C++}
 
+\subsection{Libraries}
+
 \begin{frame}{Headers}
     \begin{itemize}
         \item The C++ standard library headers are named without extensions.
@@ -241,6 +249,8 @@ using namespace std;
     \end{itemize}
 \end{frame}
 
+\subsection{Types}
+
 \begin{frame}{Built-in Types}
     Better support for boolean type:
     \begin{itemize}
@@ -276,6 +286,8 @@ using namespace std;
         \item Variable-length arrays are \textbf{forbidden}, because they have runtime types.
     \end{itemize}
 \end{frame}
+
+\subsection{References}
 
 \begin{frame}{Lvalues and Rvalues}
     Every expression in C++ is either an \blue{lvalue} or an \blue{rvalue}.
