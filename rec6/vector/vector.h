@@ -21,7 +21,7 @@ typedef struct {
  *
  * This function creates an empty %Vector on heap, with %size 0 and %capacity 0.
  */
-inline Vector *vector_create() {
+Vector *vector_create() {
   Vector *ret = (Vector *)malloc(sizeof(Vector));
   ret->size = 0;
   ret->capacity = 0;
@@ -39,7 +39,7 @@ inline Vector *vector_create() {
  * This function creates a %Vector on heap, with elements copied from a given
  * array.
  */
-inline Vector *vector_create_from_array(int *arr, size_t n) {
+Vector *vector_create_from_array(int *arr, size_t n) {
   Vector *ret = vector_create();
   ret->data = (int *)malloc(sizeof(int) * n);
   for (size_t i = 0; i < n; ++i)
@@ -58,7 +58,7 @@ inline Vector *vector_create_from_array(int *arr, size_t n) {
  * This function creates a %Vector on heap and reserve the space for @a n
  * elements to be stored. The %capacity is set @a n.
  */
-inline Vector *vector_create_reserve(size_t n) {
+Vector *vector_create_reserve(size_t n) {
   Vector *ret = vector_create();
   ret->data = (int *)malloc(sizeof(int) * n);
   ret->size = 0;
@@ -76,7 +76,7 @@ inline Vector *vector_create_reserve(size_t n) {
  * elements, and then copies the old elements into the new space. The memory
  * allocated for the old storage will be freed.
  */
-inline void vector_reallocate(Vector *vector, size_t new_cap) {
+void vector_reallocate(Vector *vector, size_t new_cap) {
   int *new_data = (int *)malloc(sizeof(int) * new_cap);
   for (size_t i = 0; i < vector->size; ++i)
     new_data[i] = vector->data[i];
@@ -92,7 +92,7 @@ inline void vector_reallocate(Vector *vector, size_t new_cap) {
  * This function checks whether a given %Vector is full, and reallocate a block
  * of memory twice as large as the original one if it is full.
  */
-inline void vector_check_and_realloc(Vector *vector) {
+void vector_check_and_realloc(Vector *vector) {
   if (vector->size == vector->capacity)
     vector_reallocate(vector, vector->capacity ? vector->capacity * 2 : 1);
 }
@@ -104,7 +104,7 @@ inline void vector_check_and_realloc(Vector *vector) {
  * This function frees not only the data of the given %Vector, but also the
  * memory storing the %Vector itself.
  */
-inline void vector_destroy(Vector *vector) {
+void vector_destroy(Vector *vector) {
   free(vector->data);
   free(vector);
 }
@@ -116,7 +116,7 @@ inline void vector_destroy(Vector *vector) {
  * @param source Points to the %Vector assigned with.
  * After assignment, *dest is a copy of *source.
  */
-inline void vector_assign(Vector *dest, Vector *source) {
+void vector_assign(Vector *dest, Vector *source) {
   // Be careful with self-assignment.
   int *new_data = (int *)malloc(sizeof(int) * source->capacity);
   for (size_t i = 0; i < source->size; ++i)
@@ -127,24 +127,24 @@ inline void vector_assign(Vector *dest, Vector *source) {
   dest->data = source->data;
 }
 
-inline void vector_push_back(Vector *vector, int v) {
+void vector_push_back(Vector *vector, int v) {
   vector_check_and_realloc(vector);
   vector->data[vector->size++] = v;
 }
 
-inline void vector_pop_back(Vector *vector) {
+void vector_pop_back(Vector *vector) {
   --vector->size;
 }
 
-inline int vector_access(Vector *vector, size_t n) {
+int vector_access(Vector *vector, size_t n) {
   return vector->data[n];
 }
 
-inline void vector_shrink_to_fit(Vector *vector) {
+void vector_shrink_to_fit(Vector *vector) {
   vector_reallocate(vector, vector->size);
 }
 
-inline void vector_clear(Vector *vector) {
+void vector_clear(Vector *vector) {
   vector->size = 0;
 }
 
