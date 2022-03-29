@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <algorithm>
+#include <iostream>
 
 // We do not separate the allocation of memory and the construction of object,
 // which is fine because we only store some ints.
