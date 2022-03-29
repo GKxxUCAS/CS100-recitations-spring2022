@@ -19,7 +19,7 @@ typedef struct {
  *
  * @return Vector* Points to the created %Vector.
  *
- * This function creates an empty %Vector on heap, with %size 0 and %capacity 0.
+ * This function creates an empty %Vector on heap, with @c size 0 and @c capacity 0.
  */
 Vector *vector_create() {
   Vector *ret = (Vector *)malloc(sizeof(Vector));
@@ -56,7 +56,7 @@ Vector *vector_create_from_array(int *arr, size_t n) {
  * @return Vector* Points to the created %Vector.
  *
  * This function creates a %Vector on heap and reserve the space for @a n
- * elements to be stored. The %capacity is set @a n.
+ * elements to be stored. The @c capacity is set to @a n.
  */
 Vector *vector_create_reserve(size_t n) {
   Vector *ret = vector_create();
