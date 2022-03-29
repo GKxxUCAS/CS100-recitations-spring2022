@@ -12,10 +12,10 @@ class Vector {
 
  public:
   Vector() : m_size(0), m_capacity(0), m_data(nullptr) {}
-  Vector(int *arr, size_t n) : m_size(n), m_capacity(n), m_data(new int[n]()) {
+  explicit Vector(int *arr, size_t n) : m_size(n), m_capacity(n), m_data(new int[n]()) {
     std::copy(arr, arr + n, m_data);
   }
-  Vector(size_t n)  // a Vector with n elements value-initialized.
+  explicit Vector(size_t n)  // a Vector with n elements value-initialized.
       : m_size(n), m_capacity(n), m_data(new int[n]()) {}
   ~Vector() {
     delete[] m_data;
