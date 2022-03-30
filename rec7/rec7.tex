@@ -1,0 +1,273 @@
+\documentclass{beamer}
+
+\usepackage{../cppenv}
+\usepackage{../recdefs}
+
+\usepackage{float, graphicx}
+
+\usetheme{EastLansing}
+
+\title{CS100 Recitation 7}
+\author{GKxx}
+\date{April 4, 2022}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\section{Classes}
+
+\subsection{Idea of Encapsulation}
+
+\begin{frame}{Drawbacks of a Simple \struct}
+    Take the \ttt{Linked\_list} as an example:
+    \begin{itemize}
+        \item Users can directly access and modify the structure of the list, \textbf{without letting the list know!}
+        \item Even though methods of `create' and `destroy' are provided, memory management is still a problem because users may forget to call them (or fail to call them correctly).
+        \item The name of every function starts with `\ttt{linked\_list}', which is lengthy and inconvenient.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \begin{figure}[h]
+        \centering
+        \includegraphics[height=0.9\textheight]{figures/lamp.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Separate Implementation Details and Interfaces}
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+struct Point2d {
+ private:
+  // implementation details
+  double x, y;
+ public:
+  // interfaces
+  void set_x(double new_x)
+    { x = new_x; }
+  void set_y(double new_y)
+    { y = new_y; }
+  double get_x()
+    { return x; }
+  double get_y()
+    { return y; }
+};
+            \end{cpp}   
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            Access modifiers:
+            \begin{itemize}
+                \item \bluett{private}: Only the code inside the class \gray{(or in a \ttt{friend})} can access.
+                \item \bluett{public}: Everyone can access.
+                \item \gray{\ttt{protected}: Only the code inside the class or in a subclass, or in a \ttt{friend} can access.}
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Separate Implementation Details and Interfaces}
+    \begin{itemize}
+        \item Implementation details should be invisible to others.
+        \item Interafces are defined for others to use.
+    \end{itemize}
+    \begin{center}
+        \begin{cpp}
+// In C++, we can directly use the name Point2d without the struct keyword.
+// The weird typedefs are not needed, either.
+Point2d p;
+p.x = 4.2;  // Error!
+p.set_x(4.2);
+p.set_y(3.5);
+std::cout << "(" << p.get_x() << ", "
+          << p.get_y() << ")" << std::endl;
+        \end{cpp}    
+    \end{center}
+\end{frame}
+
+\subsection{Basic Knowledge}
+
+\begin{frame}[fragile]{\class or \struct?}
+    In C++, \textbf{the only differences} between \class and \struct are
+    \begin{itemize}
+        \item \blue{Default access level} for a \class is \bluett{private}, while for a \struct is \bluett{public}.
+        \begin{columns}
+            \begin{column}{0.5\linewidth}
+                \begin{cpp}
+class Point {
+  double x, y; // private here
+  // Other members.
+};
+                \end{cpp}
+            \end{column}
+            \begin{column}{0.5\linewidth}
+                \begin{cpp}
+struct Point {
+  double x, y; // public here
+  // Other members.
+};
+                \end{cpp}
+            \end{column}
+        \end{columns}
+        \item \gray{Default inheritance protection level for a \ttt{class} is \ttt{private}, while for a \ttt{struct} is \ttt{public}.}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\const Member Functions}
+    \begin{cpp}
+void print_point(const Point2d &p) {
+  std::cout << "(" << p.get_x() << ", "
+            << p.get_y() << ")" << std::endl;
+}
+    \end{cpp}
+    \begin{itemize}
+        \item The parameter should be declared as \const reference, since it is not modified.
+        \item However, the code above won't compile.
+        \item \blue{We need to specify what we can do on \ttt{const} objects.}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\const Member functions}
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+struct Point2d {
+ private:
+  double x, y;
+ public:
+  void set_x(double new_x)
+    { x = new_x; }
+  void set_y(double new_y)
+    { y = new_y; }
+  double get_x() const
+    { return x; }
+  double get_y() const
+    { return y; }
+};
+            \end{cpp}        
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            \begin{itemize}
+                \item On a non-\const object, both \const members and non-\const members can be called.
+                \item On a \const object, only the \const members can be called.
+                \item A \const member function should not modify the data members.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{The \this Pointer}
+    Inside a member function, when we refer to the name of a member, we are in fact referring to it through the \this pointer.
+    \begin{cpp}
+class Point2d {
+  double x, y;
+ public:
+  void set_x(double new_x) {
+    this->x = new_x;    // equivalent to x = new_x;
+  }
+  // Other members.
+};
+    \end{cpp}
+    \begin{itemize}
+        \item \this is a pointer that points to the object itself. For example, in `\ttt{class Point2d}', \this is of type \ttt{Point2d *}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Name Lookup in \class}
+    An exception to the name lookup rule:
+    \begin{itemize}
+        \item Inside a \class, all the class members are visible, no matter they are before or after the usage.
+    \end{itemize}
+    \begin{cpp}
+class Point2d {
+ public:
+  void set_x(double new_x)
+    { x = new_x; }      // OK: The member 'x' is visible here.
+  void set_y(double new_y)
+    { y = new_y; }
+  double get_x() const
+    { return x; }
+  double get_y() const
+    { return y; }
+ private:
+  double x, y;
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Defining Member Functions outside the \class}
+    A member function can be defined outside the \class definition, \textbf{but must be declared inside the class}.
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+class Point2d {
+ public:
+  void set_x(double new_x) {
+    x = new_x;
+  }
+  void set_y(double new_y) {
+    y = new_y;
+  }
+  double get_x() const;
+  double get_y() const;
+ private:
+  double x, y;
+};
+            \end{cpp}        
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            \begin{itemize}
+                \item Use \blue{operator\ttt{::}} to refer to a name in the class scope.
+            \end{itemize}
+            \begin{cpp}
+double Point2d::get_x() const {
+  return x;
+}
+double Point2d::get_y() const {
+  return y;
+}
+            \end{cpp}
+            \begin{itemize}
+                \item The \const keyword, if needed, must appear at both declaration and definition. It is a part of the function type.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Reference to the Object itself}
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+class Point2d {
+ public:
+  Point2d &set_x(double new_x) {
+    x = new_x;
+    return *this;
+  }
+  Point2d &set_y(double new_y) {
+    y = new_y;
+    return *this;
+  }
+  // Other members.
+};
+            \end{cpp}        
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            \begin{itemize}
+                \item \ttt{set\_x} and \ttt{set\_y} returns a reference to the object itself (which is an \blue{lvalue}) by \ttt{return *this;}
+                \item Then we can do:
+                \begin{cpp}
+p.set_x(4.2).set_y(3.5);
+                \end{cpp}
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\subsection{Construction}
+
+
+\end{document}
