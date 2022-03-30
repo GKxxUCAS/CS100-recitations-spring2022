@@ -7,3 +7,7 @@ friend
 meet operator overloading the first time (relation operators)
 
 new and delete
+
+copy control?
+
+`std::string` and `std::vector`? (if we have time)
