@@ -127,11 +127,11 @@ inline bool operator>=(const Vector &lhs, const Vector &rhs) {
   return !(lhs < rhs);
 }
 
-void print_vector(std::ostream &os, const Vector &vec) {
+void print_vector(const Vector &vec) {
   for (size_t i = 0; i + 1 < vec.size(); ++i)
-    os << vec.at(i) << ' ';
+    std::cout << vec.at(i) << ' ';
   if (vec.size() > 1)
-    os << vec.back();
+    std::cout << vec.back();
 }
 
 #endif // CS100_VECTOR_HPP

@@ -25,14 +25,14 @@ class Point2d {
   }
 };
 
-void print_point2d(std::ostream &os, const Point2d &point) {
-  os << "(" << point.get_x() << ", " << point.get_y() << ")";
+void print_point2d(const Point2d &point) {
+  std::cout << "(" << point.get_x() << ", " << point.get_y() << ")";
 }
 
-void read_point2d(std::istream &is, Point2d &point) {
+void read_point2d(Point2d &point) {
   double x, y;
-  is >> x >> y;
-  if (is)
+  std::cin >> x >> y;
+  if (std::cin)
     point.set_x(x).set_y(y);
 }
 
