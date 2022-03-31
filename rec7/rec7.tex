@@ -558,4 +558,56 @@ class Line2d {
     Many kinds of members are not \blue{default-initializable}, e.g. a reference, or a class type member whose class does not have accessible default ctor.
 \end{frame}
 
+\begin{frame}{Synthesized Default Ctor}
+    The synthesized default ctor will
+    \begin{itemize}
+        \item initialize a member with the in-class initializer, if it has an in-class initializer.
+        \item Otherwise, it will default-initialize the member.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Delegating Ctor}
+    Since C++11, a ctor can \blue{delegate} part or all of its work to another ctor:
+    \begin{cpp}
+class Point2d {
+  double x, y;
+ public:
+  Point2d() : Point2d(0, 0) {
+    std::cout << "default ctor body\n";
+  }
+  Point2d(double a, double b) : x(a), y(b) {
+    std::cout << "Point2d(double, double) body\n";
+  }
+};
+// in main
+Point2d p;
+    \end{cpp}
+    The above code outputs ``\ttt{Point2d(double, double) body}'' first, and then ``\ttt{default ctor body}''.
+\end{frame}
+
+\begin{frame}[fragile]{Example}
+    \begin{cpp}
+class Vector {
+  size_t m_size = 0, m_capacity = 0;
+  int *m_data = nullptr;
+ public:
+  // explicitly require a synthesized default ctor
+  Vector() = default;
+  Vector(size_t n) : m_size(n), m_capacity(n),
+    m_data(new int[n]()) {}
+  // delegate to Vector::Vector(size_t)
+  Vector(int *begin, int *end) : Vector(end - begin) {
+    for (int *p = m_data; begin != end; ++begin, ++p)
+      *p = *begin;
+  }
+};
+    \end{cpp}
+\end{frame}
+
+\subsection{Destruction}
+
+\begin{frame}{Destructor}
+    
+\end{frame}
+
 \end{document}
