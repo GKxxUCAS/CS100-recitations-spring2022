@@ -269,5 +269,293 @@ p.set_x(4.2).set_y(3.5);
 
 \subsection{Construction}
 
+\begin{frame}[fragile]{Constructors}
+    \blue{Constructors} (`ctors' for short) define the ways of initializing an object.
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+class Point2d {
+ public:
+  Point2d(double a, double b)
+    : x(a), y(b) {}
+  Point2d() : x(0), y(0) {}
+  // Other members.
+};
+            \end{cpp}
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+// Initializing a Point2d object with x = 3.5, y = 4.2
+Point2d p1(3.5, 4.2);
+// Default-initialization calls the default ctor with no arguments.
+Point2d p2;
+// p2 is initialized with x = 0, y = 0.
+            \end{cpp}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Constructors}
+    \begin{itemize}
+        \item The name of a ctor is name of the class.
+        \item The return-type is omitted, because a construction expression always returns the constructed object. The following statement will output \ttt{4.2}.
+        \begin{cpp}
+std::cout << Point2d(4.2, 3.5).get_x() << std::endl;
+        \end{cpp}
+        \item There is a \textbf{constructor initializer list} after the parameters, starting with `\ttt{:}', containing explicit initialization of \blue{several} data members, separated with commas.
+        \item The constructors are often \blue{overloaded}, i.e. we may define several different ways of initialization.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{The Ctor Initializer List}
+    The most important part of a ctor is the \textbf{initializer list}.
+    \begin{itemize}
+        \item The ctor-init-list is the part where data members are initialized.
+        \item \textbf{All the data members} will be initialized before the function body begins, \textbf{in the order in which they appear in the class definition}.
+        \item If a data member does not appear in the ctor-init-list, it is \textbf{default-initialized}.
+        \begin{itemize}
+            \item For built-in types, default-initialization makes the object hold an undefined value.
+            \item For class types, default-initialization is calling the \textbf{default-ctor} of that class.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Ctor-init-list: Examples}
+    \begin{itemize}
+        \item The following ctor is \textbf{bad}: (It is default-initializing the members, and then assigning values to them.)
+        \begin{cpp}
+Point2d(double a, double b) {
+  x = a;
+  y = b;
+}
+        \end{cpp}
+        \item The following ctor is \textbf{misleading}:
+        \begin{cpp}
+Point2d(double a, double b) : y(b), x(a) {}
+        \end{cpp}
+        \item The following ctor first default-initializes \ttt{x}, and then initializes \ttt{y} with given value.
+        \begin{cpp}
+Point2d(double b) : y(b) {}
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Ctor-init-list: Examples}
+    A typical bug I made (years ago):
+    \begin{cpp}
+class Snake_game {
+  std::vector foods;
+  size_t num_food;
+  // Other members
+ public:
+  Snake_game(size_t n, /* other args */)
+    : num_food(n), foods(num_food) {}
+  // Other members
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Importance of Using Ctor-init-list}
+    It is strongly suggested to use ctor-init-lists \textbf{routinely}:
+    \begin{itemize}
+        \item Initialize the member directly, instead of first default-initialize it and then assign it with a value.
+        \item Some members cannot be default-initialized or cannot be assigned.
+        \begin{cpp}
+class Foo {
+  const int x;
+  int y;
+ public:
+  Foo(int a, int b) {
+    // Error: x cannot be assigned after initialization.
+    x = a;
+    y = b;
+  }
+};
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Default Initialization}
+    \begin{itemize}
+        \item The \textbf{default ctor} is the ctor with no arguments. It defines the behavior when the object is \textbf{default-initialized} or \textbf{value-initialized}.
+        \item The following code outputs `\ttt{Liu Big God is so strong.}'.
+        \begin{cpp}
+class Point2d {
+ public:
+  Point2d() : x(0), y(0) {
+    std::cout << "Liu Big God is so strong.\n"
+  }
+  // Other members.
+};
+// in main
+Point2d p;
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Default Initialization}
+    \begin{cpp}
+class Line2d {
+  Point2d p0, v;
+ public:
+  Line2d()
+    { std::cout << "Liu Big God is so powerful.\n" }
+  // Other members.
+};
+    \end{cpp}
+    What's the output of the following code (inside the \ttt{main} function)?
+    \begin{cpp}
+Line2d line;
+    \end{cpp}
+    \bluett{Liu Big God is so strong.}\\
+    \bluett{Liu Big God is so strong.}\\
+    \bluett{Liu Big God is so powerful.}
+\end{frame}
+
+\begin{frame}[fragile]{Have a Try}
+    Define a class \ttt{Vector}:
+    \begin{itemize}
+        \item Define the data members \ttt{m\_size}, \ttt{m\_capacity} and \ttt{m\_data}, denoting the number of elements stored, the maximum possible size of the current storage, and a pointer to the storage.
+        \begin{itemize}
+            \item The prefix \ttt{m\_} means `member'.
+        \end{itemize}
+        \item Define a default-ctor that initializes the Vector to an empty Vector, i.e. \ttt{m\_size = 0}, \ttt{m\_capacity = 0}, \ttt{m\_data = \blue{nullptr}}.
+        \item Define a ctor that receives an unsigned number \ttt{n}, which initializes the Vector to be holding \ttt{n} value-initialized \bluett{int}s.
+        \item Define a ctor that receives two pointers \ttt{begin} and \ttt{end} pointing to the beginning and the pass-end of an array. The ctor copies the values from the range of the array.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Constructors}
+    \begin{cpp}
+class Vector {
+  size_t m_size, m_capacity;
+  int *m_data;
+ public:
+  Vector() : m_size(0), m_capacity(0), m_data(nullptr) {}
+  Vector(size_t n) : m_size(n), m_capacity(n),
+    m_data(new int[n]()) {}
+  Vector(int *begin, int *end)
+    : m_size(end - begin), m_capacity(end - begin),
+      m_data(new int[end - begin]()) {
+    for (int *p = m_data; begin != end; ++begin, ++p)
+      *p = *begin;
+  }
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}{\bluett{nullptr}}
+    \begin{itemize}
+        \item In C, the null pointer \ttt{NULL} is defined to be of type \bluett{void }\ttt{*}, so that it can be converted to any pointer type.
+        \item However, C++ does not allow implicit conversion from \bluett{void }\ttt{*} to other pointer types. It's possible that \ttt{NULL} is defined as \ttt{(\blue{long})0}.
+        \begin{itemize}
+            \item C++ allows initialization of a pointer with integral literal \ttt{0}, but not other values.
+        \end{itemize}
+        \item Since C++11, we use \bluett{nullptr} as a well-defined null pointer. It is of type \ttt{std::}\bluett{nullptr\_t}, a type defined in \ttt{<cstddef>}. (\ttt{stddef.h} does not have this!)
+    \end{itemize}
+\end{frame}
+
+\newcommand{\new}{\bluett{new}~}
+\newcommand{\delete}{\bluett{delete}~}
+
+\begin{frame}{\new and \delete}
+    \begin{itemize}
+        \item Roughly speaking, \new and \delete are like the C++ version of \ttt{malloc} and \ttt{free}: They allocate memory on heap.
+        \item \new not only \textbf{allocates the memory}, but also \textbf{constructs the object}.
+        \item \delete first \textbf{destructs the object}, and then \textbf{deallocates (frees) the memory}.
+        \item \new and \delete will call the ctor and dtor of the type, while \ttt{malloc} and \ttt{free} won't!
+        \item When you have some object on heap in C++, \textbf{NEVER use \ttt{malloc}/\ttt{calloc}/\ttt{realloc}/\ttt{free}}. You should always use \new and \delete.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\new and \delete}
+    \begin{cpp}
+int *pi = new int;                // default initialization
+int *pi2 = new int();             // value initialization
+int *pia = new int[10];           // default initialization
+int *pia2 = new int[10]();        // value initialization
+int *pia3 = new int[10]{1, 2, 3}; // First three values: 1, 2, 3
+                                  // Others: value initialization
+// call Point2d::Point2d(double, double)
+Point2d *p = new Point2d(3, 4);
+// call Point2d::Point2d()
+Point2d *p2 = new Point2d;
+// call Point2d::Point2d()
+Point2d *p3 = new Point2d();
+    \end{cpp}
+\end{frame}
+
+\begin{frame}{Initialization in \new}
+    \begin{itemize}
+        \item Whenever the explicit initializer is absent, \blue{default initialization} is performed.
+        \item Whenever an explicit initializer is provided but as an empty pair of parentheses, \blue{value initialization} is performed.
+        \item For a class type \textbf{with a user-defined default ctor}, both default initialization and value initialization call the default ctor.
+    \end{itemize}
+    The rules for initialization are \textbf{very complicated}. Now you only need to know these that are listed above.
+\end{frame}
+
+\begin{frame}[fragile]{\new and \delete}
+    \begin{itemize}
+        \item To destroy the object created by \new and free the memory, use \delete.
+        \begin{cpp}
+int *pi = new int();
+// after some operations
+delete pi;
+        \end{cpp}
+        \item For an array type, use \bluett{delete}\ttt{[]}.
+        \begin{cpp}
+int *pia = new int[10]();
+// after some operations
+delete[] pia;
+        \end{cpp}
+        \item \delete will call the destructor of a class type. (We will talk about destructors later.)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{In-class Initializer}
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{itemize}
+                \item An \blue{in-class initializer} is used to define the default value for a member.
+                \item When a member with an in-class initializer is \blue{default initialized} or \blue{value initialized}, it will be initialized with the in-class initializer.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+class Point2d {
+  double x = 0, y = 0;
+  // Other members.
+};
+
+class Line2d {
+  // Curly braces are allowed here since C++11.
+  Point2d p0{0, 0}, v{1, 1};
+  // Other members.
+};
+            \end{cpp}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{In-class Initializer}
+    Due to the limitation of compilers (you will learn about it in CS131), parentheses are not allowed in in-class initializer: They will be viewed as function declarations!
+    \begin{cpp}
+class Line2d {
+  // Error: They are seen as function declarations.
+  Point2d p0(0, 0), v(1, 1);
+  int foo(); // Exactly a member function declaration.
+  // Other members.
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}{Synthesized Default Ctor}
+    The compiler will generate a default ctor if the following conditions are satisfied:
+    \begin{itemize}
+        \item Each member without a in-class initializer is \blue{default-initializable}, and
+        \item There is no user-defined ctors, or the default ctor is defined as \ttt{=default}.
+    \end{itemize}
+    Many kinds of members are not \blue{default-initializable}, e.g. a reference, or a class type member whose class does not have accessible default ctor.
+\end{frame}
 
 \end{document}
