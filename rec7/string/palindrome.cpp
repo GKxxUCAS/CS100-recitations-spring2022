@@ -2,6 +2,21 @@
 #include <iostream>
 #include <string>
 
+bool is_palindrome(const std::string &s, int l, int r) {
+  for (int i = l, j = r; i < j; ++i, --j) {
+    while (!isalpha(s[i]) && i < j)
+      ++i;
+    while (!isalpha(s[j]) && i < j)
+      --j;
+    if (i >= j)
+      break;
+    if (toupper(s[i]) != toupper(s[j])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 int main() {
   std::string s;
   std::getline(std::cin, s);
@@ -13,20 +28,7 @@ int main() {
     if (q == 0) {
       int l, r;
       std::cin >> l >> r;
-      bool ans = true;
-      for (int i = l, j = r; i < j; ++i, --j) {
-        while (!isalpha(s[i]) && i < j)
-          ++i;
-        while (!isalpha(s[j]) && i < j)
-          --j;
-        if (i >= j)
-          break;
-        if (toupper(s[i]) != toupper(s[j])) {
-          ans = false;
-          break;
-        }
-      }
-      std::cout << (ans ? "Yes" : "No") << std::endl;
+      std::cout << (is_palindrome(s, l, r) ? "Yes" : "No") << std::endl;
     } else if (q == 1) {
       int k;
       std::cin >> k;
