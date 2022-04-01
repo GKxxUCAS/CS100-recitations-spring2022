@@ -11,9 +11,9 @@
 \author{GKxx}
 \date{April 4, 2022}
 
-\AtBeginSubsection{
+\AtBeginSection{
     \begin{frame}{Content}
-        \tableofcontents[currentsection, currentsubsection]
+        \tableofcontents[currentsection]
     \end{frame}
 }
 
@@ -23,9 +23,7 @@
     \maketitle
 \end{frame}
 
-\section{Classes}
-
-\subsection{Idea of Encapsulation}
+\section{Idea of Encapsulation}
 
 \begin{frame}{Drawbacks of a Simple \struct}
     Take the \ttt{Linked\_list} as an example:
@@ -94,7 +92,7 @@ std::cout << "(" << p.get_x() << ", "
     \end{center}
 \end{frame}
 
-\subsection{Basic Knowledge}
+\section{Basic Knowledge}
 
 \begin{frame}[fragile]{\class or \struct?}
     In C++, \textbf{the only differences} between \class and \struct are
@@ -274,7 +272,7 @@ p.set_x(4.2).set_y(3.5);
     \end{columns}
 \end{frame}
 
-\subsection{Construction}
+\section{Construction}
 
 \begin{frame}[fragile]{Constructors}
     \blue{Constructors} (`ctors' for short) define the ways of initializing an object.
@@ -611,7 +609,7 @@ class Vector {
     \end{cpp}
 \end{frame}
 
-\subsection{Destruction}
+\section{Destruction}
 
 \begin{frame}{Destructor}
     \begin{definition}[Destructor]
@@ -715,7 +713,7 @@ int main() {
     \end{columns}
 \end{frame}
 
-\subsection{Further Reading}
+\section{Further Reading}
 
 \begin{frame}{Further Reading}
     \begin{itemize}
