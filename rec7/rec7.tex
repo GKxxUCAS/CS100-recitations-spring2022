@@ -412,6 +412,7 @@ class Line2d {
     \begin{cpp}
 Line2d line;
     \end{cpp}
+    \pause
     \bluett{Liu Big God is so strong.}\\
     \bluett{Liu Big God is so strong.}\\
     \bluett{Liu Big God is so powerful.}
@@ -568,6 +569,7 @@ class Line2d {
     \begin{itemize}
         \item initialize a member with the in-class initializer, if it has an in-class initializer.
         \item Otherwise, it will default-initialize the member.
+        \item It is \bluett{public}.
     \end{itemize}
 \end{frame}
 
@@ -587,7 +589,7 @@ class Point2d {
 // in main
 Point2d p;
     \end{cpp}
-    The above code outputs ``\ttt{Point2d(double, double) body}'' first, and then ``\ttt{default ctor body}''.
+    The above code outputs ``\bluett{Point2d(double, double) body}'' first, and then ``\bluett{default ctor body}''.
 \end{frame}
 
 \begin{frame}[fragile]{Example}
@@ -709,6 +711,11 @@ int main() {
   return 0;
 }
             \end{cpp}
+            \pause
+            \bluett{Point dtor.}\\
+            \bluett{Line dtor.}\\
+            \bluett{Point dtor.}\\
+            \bluett{Point dtor.}
         \end{column}
     \end{columns}
 \end{frame}
@@ -719,7 +726,7 @@ int main() {
     \begin{itemize}
         \item Effective C++ Item 18: Make interfaces easy to use correctly and hard to use incorrectly.
         \begin{itemize}
-            \item Read until the \ttt{class Month} example (about two pages). The rest part is not for you now.
+            \item Read until the \ttt{class Month} example (about three pages). The rest part is not for you now.
         \end{itemize}
         \item Effective C++ Item 22: Declare data members private.
     \end{itemize}
