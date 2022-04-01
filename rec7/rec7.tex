@@ -11,6 +11,12 @@
 \author{GKxx}
 \date{April 4, 2022}
 
+\AtBeginSubsection{
+    \begin{frame}{Content}
+        \tableofcontents[currentsection, currentsubsection]
+    \end{frame}
+}
+
 \begin{document}
 
 \begin{frame}
@@ -155,6 +161,7 @@ struct Point2d {
                 \item On a \const object, only the \const members can be called.
                 \item A \const member function should not modify the data members.
             \end{itemize}
+            Use \const whenever possible!
         \end{column}
     \end{columns}
 \end{frame}
@@ -607,7 +614,105 @@ class Vector {
 \subsection{Destruction}
 
 \begin{frame}{Destructor}
-    
+    \begin{definition}[Destructor]
+        Destructor (`dtor' for short) is a member function which is called automatically when the object is destroyed.
+    \end{definition}
+    Several typical cases:
+    \begin{itemize}
+        \item When control flow reaches the end of the scope of a local object.
+        \item When the object (if it is \bluett{new}ed) is \bluett{delete}d.
+        \item \gray{When an exception happens...}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Define a Dtor}
+    \begin{itemize}
+        \item A dtor does not return a value. The value-type is omitted.
+        \item The name of a dtor is \ttt{\~}\textit{class-name}. E.g. \ttt{\~{}Point2d}.
+        \item The dtor is unique and cannot be overloaded. A dtor receives no arguments.
+        \item The function body of the dtor does the work that needs to be done when an object is destroyed, e.g. \blue{frees the resources} or output something.
+        \item \textbf{After the function body is executed}, the members are destroyed by calling their own dtors, \textbf{in reverse order} from the order in which they are declared.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Define a Dtor}
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            The dtor of the \ttt{Point2d} class doesn't need to do anything.
+            \begin{cpp}
+class Point2d {
+ public:
+  ~Point2d() {}
+  // Other members.
+};
+            \end{cpp}
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            The dtor of \ttt{Vector} should free the memory it holds.
+            \begin{cpp}
+class Vector {
+ public:
+  ~Vector() { delete[] m_data; }
+  // Other members.
+};
+            \end{cpp}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Access Level of Ctors and Dtors}
+    \begin{itemize}
+        \item The access restrictions also apply to ctors and dtors. For example, a \bluett{private} ctor can only be accessed inside the class or in its \bluett{friend}s.
+        \item At any part of the code, if the \textbf{dtor} of a class is invisible, then \textbf{constructing} an object of such type is not allowed. (If an object is not destructible, then it is not constructible.)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Synthesized Dtors}
+    \begin{itemize}
+        \item If there is no user-defined dtor, the compiler will generate one by default.
+        \item The synthesized dtor is
+        \begin{itemize}
+            \item \bluett{public},
+            \item with an empty function body,
+            \item \gray{non-virtual},
+            \item \gray{and implicitly \ttt{noexcept}}.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Destructing Order}
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+class Point2d {
+ public:
+  ~Point2d() {
+    std::cout<< "Point dtor.\n";
+  }
+  // Other members.
+};
+class Line2d {
+  Point2d p0{0, 0}, v; 
+ public:
+  ~Line2d() {
+    std::cout << "Line dtor.\n";
+  }
+  // Other members.
+};
+            \end{cpp}
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            What's the output of the following code?
+            \begin{cpp}
+int main() {
+  Point2d *p = new Point2d();
+  delete p;
+  Line2d l;
+  return 0;
+}
+            \end{cpp}
+        \end{column}
+    \end{columns}
 \end{frame}
 
 \end{document}
