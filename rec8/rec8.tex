@@ -91,7 +91,7 @@ Point2d p3 = less_in_x(p0, p1);
     \begin{itemize}
         \item Many compilers avoid such copying by \blue{Return Value Optimization (RVO)}.
         \item Since C++11, a local object will be returned by \blue{moving} instead of \blue{copying}, if it is \blue{move-constructible}.
-        \item C++17 guarantees that this copy won't happen, even when the object is not move-constructible.
+        \item C++17 \textbf{guarantees} that such copying won't happen, even when the object is not move-constructible.
     \end{itemize}
 \end{frame}
 
