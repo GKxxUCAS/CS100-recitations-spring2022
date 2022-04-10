@@ -3,6 +3,8 @@
 \usepackage{../cppenv}
 \usepackage{../recdefs}
 
+\usepackage{float, graphicx}
+
 \usetheme{PaloAlto}
 \usecolortheme{spruce}
 
@@ -561,6 +563,121 @@ class Vector {
   }
 };
     \end{cpp}
+\end{frame}
+
+\section{Type Deduction}
+
+\subsection{\ttt{auto}}
+
+\newcommand{\auto}{\bluett{auto}~}
+
+\begin{frame}[fragile]{Before C++11...}
+    In C and before C++11, the \auto specifier is used like this:
+    \begin{cpp}
+auto int x = 42;
+    \end{cpp}
+    It indicates `automatic storage duration': the variable \ttt{x} should be destroyed at the end of its scope...
+    \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.25]{figures/stupid.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Since C++11}
+    Since C++11, the \auto specifier is used to let the compiler deduct the type:
+    \begin{cpp}
+auto x = 42;    // x is int
+auto y = 3.14;  // y is double
+    \end{cpp}
+    The variable declared by \auto must be explicitly initialized, so that the compiler can know the type.
+    \begin{cpp}
+auto z;         // ???
+    \end{cpp}
+    If more than one variables are declared in one statement, all of them should be explicitly initialized, and the initializers should have a same type.
+    \begin{cpp}
+auto a = 1, b;  // Error.
+auto c = 42, d = 3.14; // Error.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{The \auto Type Specifier}
+    Compound types are allowed:
+    \begin{cpp}
+std::string s = "Hello";
+const auto &sr = s; // const std::string &
+auto *p = &s;       // std::string *
+    \end{cpp}
+    \pause
+    Low-level \const will be preserved, but reference and top-level \const will be ignored (Why?):
+    \begin{cpp}
+const int ci = 42;
+auto i2 = ci;       // int
+auto *pi = &ci;     // const int *
+auto &ri = ci;      // const int &
+auto i3 = ri;       // int; & and const are ignored.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Why we Need \auto?}
+    The C++ type system is much more complex than C.
+    \begin{itemize}
+        \item Sometimes the name of the type is too long, e.g.
+        \begin{cpp}
+std::shared_ptr<std::map<std::string, std::vector<std::string>::size_type>>
+        \end{cpp}
+        \item Sometimes we have no idea what type it is:
+        \begin{cpp}
+// a lambda expression
+auto f = [](int a, int b) -> int { return a + b; };
+        \end{cpp}
+    \end{itemize}
+    The compiler knows everything! (C++ is statically-typed!)
+\end{frame}
+
+\subsection{\ttt{decltype}}
+
+\newcommand{\decltype}{\bluett{decltype~}}
+
+\begin{frame}[fragile]{The \decltype Type Specifier}
+    Sometimes we want to use the \textbf{type} of an expression to declare an object, but we don't want to evaluate that expression.
+    \begin{cpp}
+int fun() {
+  // do something
+}
+decltype(f()) x;    // x is int, but f is not called!
+    \end{cpp}
+    The compiler can know the type of the expression without evaluating it. (statically-typed!)
+\end{frame}
+
+\begin{frame}[fragile]{\decltype is Honest}
+    \decltype does not ignore top-level \const or reference. It just says the exact type of the expression.
+    \begin{cpp}
+const int i = 0;    // decltype(i) is const int
+int f(const Widget &w);
+// decltype(w) is const Widget &
+// decltype(f) is int(const Widget &)
+const std::string s = "Hello";
+// decltype(s) is const std::string
+// decltype(s[0]) is const char &
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{\decltype is Honest}
+    When \decltype is used on an expression that yields an \blue{lvalue}, the result is a reference (Why?).
+    \begin{cpp}
+int i = 42, *p = &i;
+int j = 50;
+decltype(*p) r = j;   // r is int & bound to j.
+    \end{cpp}
+    An object itself can be used as an expression (which yields an \blue{lvalue}!), but you should place it in a pair of parentheses to show this explicitly.
+    \begin{cpp}
+decltype(i) k = 65;   // k is int
+decltype((i)) l = k;  // l is int & bound to k.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}{Reading Materials}
+    C++ has a very complex type system and type deduction rules. These rules are explained thoroughly in \blue{\textit{Effective Modern C++} Item 1, 2, 3, 4, 5, 6}. But it is too early to understand them for you now.
 \end{frame}
 
 \end{document}
