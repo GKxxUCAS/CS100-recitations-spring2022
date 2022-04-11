@@ -4,7 +4,7 @@
 int main() {
   int a[] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3};
   Vector v1(a, sizeof(a) / sizeof(int));
-  print_vector(std::cout, v1);
+  print_vector(v1);
   std::cout << std::endl;
   std::cout << "size() == " << v1.size() << ", capacity() == " << v1.capacity()
             << std::endl;
@@ -22,7 +22,7 @@ int main() {
               << ", capacity() == " << v3.capacity() << std::endl;
     for (size_t i = 0; i < v1.size(); ++i)
       v3.at(i) = v1.at(i);
-    print_vector(std::cout, v3);
+    print_vector(v3);
   }
   return 0;
 }
