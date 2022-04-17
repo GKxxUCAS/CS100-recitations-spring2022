@@ -380,7 +380,6 @@ Derived &dr = dynamic_cast<Derived &>(*bp);
         \item A class with at least one pure virtual function is an \textbf{abstract class}.
         \item A pure virtual function can be overridden in a subclass. But if it is not overridden, the subclass is still abstract.
         \item Creating objects of a type that is an abstract class is \textbf{not allowed}.
-        \item Calling a pure virtual function directly is \textbf{not allowed}. You should always call the overriding versions.
     \end{itemize}
     \blue{Generally, virtual functions in the base class that do not have a reasonable behavior should be pure virtual, and such class should be abstract.}
 \end{frame}
@@ -431,6 +430,22 @@ Derived &dr = dynamic_cast<Derived &>(*bp);
             \includegraphics[scale=0.6]{figures/shape_extended.png}
         \end{figure}
     \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{A Pure \virtual Destructor}
+    Sometimes a class should be abstract, but there seems to be no reasonable choice over which function should be pure virtual.
+    \pause
+    \begin{itemize}
+        \item Define the destructor to be pure virtual, and provide another definition.
+    \end{itemize}
+    \begin{cpp}
+class Base {
+ public:
+  virtual ~Base() = 0;
+};
+Base::~Base() {}
+    \end{cpp}
+    In fact, we can provide definitions for pure virtual functions.
 \end{frame}
 
 \begin{frame}[fragile]{More on Inheritance...}
