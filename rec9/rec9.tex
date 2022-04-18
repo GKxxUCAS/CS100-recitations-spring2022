@@ -21,6 +21,10 @@
     \maketitle
 \end{frame}
 
+\begin{frame}{Contents}
+    \tableofcontents
+\end{frame}
+
 \section{Inheritance and Polymorphism}
 
 \subsection{Inheritance}
@@ -458,6 +462,215 @@ class Discounted_item : public Item {};
     \end{itemize}
 \end{frame}
 
-\section{Constant Expressions}
+\section{More on Functions}
+
+\subsection{Default Arguments}
+
+\begin{frame}[fragile]{Default Arguments}
+    \begin{cpp}
+void create_window(std::size_t height = 24,
+                   std::size_t width = 80) {
+  // create a window with given height and width
+}
+    \end{cpp}
+    If the caller omit the `\ttt{width}' argument
+    \begin{cpp}
+create_window(30);
+    \end{cpp}
+    then \ttt{width} will be set to default value \ttt{80}.
+    If both arguments are omitted
+    \begin{cpp}
+create_window();
+    \end{cpp}
+    then \ttt{height} is set to \ttt{24} and \ttt{width} \ttt{80}.
+\end{frame}
+
+\begin{frame}[fragile]{Default Arguments}
+    \begin{itemize}
+        \item Only the last few parameters can have default arguments.
+        \begin{cpp}
+void fun(int a = 42, int b); // Error
+        \end{cpp}
+        \item Functions that have default arguments will be treated as \textbf{overloading functions}. For the \ttt{create\_window} function, it is the same as
+        \begin{cpp}
+void create_window();
+void create_window(std::size_t height);
+void create_window(std::size_t height,
+                   std::size_t width);
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Default Arguments}
+    Member functions can also have default arguments:
+    \begin{cpp}
+class Vector {
+ public:
+  Vector(std::size_t n, int val = 0)
+      : m_size(n), m_capacity(n),
+        m_data(new int[n]{}) {
+    for (std::size_t i = 0; i < n; ++i)
+      m_data[i] = val;
+  }
+  // other members
+};
+    \end{cpp}
+    It will be treated as if there are two constructors
+    \begin{cpp}
+Vector::Vector(std::size_t);
+Vector::Vector(std::size_t, int);
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Default Argument Declaration}
+    A function may be declared multiple times, but default arguments should \textbf{not} be redeclared.
+    \begin{cpp}
+class Vector {
+ public:
+  Vector(std::size_t n, int val = 0);
+};
+Vector::Vector(std::size_t n, int val = 0) // Error.
+    : m_size(n), m_capacity(n), m_data(new int[n]{}) {
+  std::fill_n(m_data, n, val);
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Default Argument Declaration}
+    A function may be declared multiple times, but default arguments should \textbf{not} be redeclared. \red{(Why?)}
+    \begin{cpp}
+class Vector {
+ public:
+  Vector(std::size_t n, int val = 0);
+};
+Vector::Vector(std::size_t n, int val) // Correct.
+    : m_size(n), m_capacity(n), m_data(new int[n]{}) {
+  std::fill_n(m_data, n, val);
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Default Argument Declaration}
+    Although it seems weird, subsequent declarations can have additional default arguments.
+    \begin{cpp}
+void create_window(std::size_t height,
+                   std::size_t width = 80);
+void craete_window(std::size_t height = 24, // OK.
+                   std::szie_t width) {
+  // ...
+}
+    \end{cpp}
+    Defaults can be specified only when all parameters to the right already have defaults.
+\end{frame}
+
+\subsection{Passing Command-Line Arguments}
+
+\begin{frame}[fragile]{Command-Line Arguments}
+    \textbf{Suppose you are the author of \ttt{g++}}. When the user type\\
+    \ttt{g++ -o hello hello.cpp}\\
+    in the terminal, there should be a way to let your program get this command.
+    \pause
+    \begin{cpp}
+int main(int argc, char **argv) {
+  // ...
+}
+    \end{cpp}
+    \begin{itemize}
+        \item \ttt{argv} is an array of strings. In this example, \ttt{argv = \{"g++", "-o", "hello", "hello.cpp"\}}.
+        \item \ttt{argc} is the number of strings in the array \ttt{argv}.
+        \item \ttt{char *argv[]} is the same as \ttt{char **argv}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Command-Line Arguments}
+    \textbf{The only two} correct versions of the \ttt{main} function:
+    \begin{cpp}
+int main();
+int main(int argc, char **argv);
+    \end{cpp}
+\end{frame}
+
+\section{Aids for Debugging}
+
+\begin{frame}[fragile]{Assertion}
+    \begin{cpp}
+#include <cassert>
+int main() {
+  int a, b;
+  std::cin >> a >> b;
+  assert(b != 0);
+  int c = a / b;
+  // ...
+}
+    \end{cpp}
+    C++11 also provides compile-time assertion \bluett{static\_assert}, but it's too early for you now... (We used this in Problem 2 to detect whether your \ttt{Shape} class is abstract.)
+\end{frame}
+
+\begin{frame}[fragile]{Some Helpful Macros}
+    To disable assertions, we can use the \ttt{NDEBUG} macro.
+    \begin{cpp}
+int main() {
+  int a, b;
+  std::cin >> a >> b;
+#define NDEBUG
+  assert(b != 0); // This assertion will not be performed.
+#undef NDEBUG
+  assert(b != 0); // This assertion will be performed.
+  // ...
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Some Helpful Macros}
+    \begin{itemize}
+        \item \ttt{\_\_LINE\_\_}: \bluett{int}, the line number.
+        \item \ttt{\_\_func\_\_}: \const\bluett{char }\ttt{[]}, the name of the current function.
+        \item \ttt{\_\_FILE\_\_}: \const\bluett{char }\ttt{[]}, the name of the current file.
+        \item \ttt{\_\_TIME\_\_}: \const\bluett{char }\ttt{[]}, the current time.
+    \end{itemize}
+\end{frame}
+
+\section{Type Aliases}
+
+\begin{frame}[fragile]{New-style Alias Declaration}
+    \begin{cpp}
+using LL = long long;
+    \end{cpp}
+    The new-style type alias declaration is more clear:
+    \begin{cpp}
+typedef int arr_t[10];
+using arr_t = int[10];
+    \end{cpp}
+    The \bluett{using} type alias declaration can also be a template, but \bluett{typedef} cannot.
+\end{frame}
+
+\begin{frame}[fragile]{Type Alias Member}
+    \begin{columns}
+        \begin{column}{0.6\linewidth}
+            \begin{cpp}
+class Vector {
+ public:
+  using size_type = std::size_t;
+  using value_type = int;
+  using pointer = int *;
+  using reference = int &;
+  // other members
+};
+int main() {
+  Vector v = some_value();
+  for (Vector::size_type i = 0;
+       i < v.size(); ++i)
+    // do something
+}
+            \end{cpp}
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            \begin{itemize}
+                \item Access modifiers also apply to type alias members.
+                \item To access a type alias member, use \textit{class-name}\ttt{::}\textit{type-member}.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
 
 \end{document}
