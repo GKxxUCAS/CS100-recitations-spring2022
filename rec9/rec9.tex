@@ -366,7 +366,7 @@ Derived &dr = dynamic_cast<Derived &>(*bp);
 
 \begin{frame}{Downcasting}
     \begin{itemize}
-        \item \bluett{dynamic\_cast} may have a significant funtime cost.
+        \item \bluett{dynamic\_cast} may have a significant runtime cost.
         \item Several common ways to avoid \bluett{dynamic\_cast}, like writing a group of \virtual functions.
         \item \textit{Effective C++} Item 27 talks about type-casting.
         \item \textit{More Effective C++} Item 31 talks about some more complicated cases: Making functions virtual with respect to more than one object.
