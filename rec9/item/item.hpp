@@ -2,6 +2,7 @@
 #define CS100_DEMO_ITEMS_HPP
 
 #include <cstddef>
+#include <iostream>
 #include <string>
 
 class Item {
@@ -38,5 +39,9 @@ class Discounted_item : public Item {
       return n * price;
   }
 };
+
+inline void print_item(const Item &item) {
+  std::cout << "name: " << item.get_name() << ", price: " << item.net_price(1);
+}
 
 #endif // CS100_DEMO_ITEMS_HPP
