@@ -28,6 +28,10 @@
 
 \section{Copy and Swap}
 
+\begin{frame}{Contents}
+    \tableofcontents[currentsection]
+\end{frame}
+
 \begin{frame}[fragile]{Swap of Vector}
     The \ttt{std::swap} (defined in \ttt{<algorithm>}):
     \begin{cpp}
@@ -109,6 +113,10 @@ class Vector {
 \end{frame}
 
 \section{Prevent Copying: An Interesting Way}
+
+\begin{frame}{Contents}
+    \tableofcontents[currentsection]
+\end{frame}
 
 \begin{frame}{Prevent Copying}
     Make the compiler unable to synthesize the copying oeprations?
@@ -371,7 +379,7 @@ a = b;
 \begin{frame}{Value Semantics and Reference Semantics}
     Pros and cons?
     \begin{itemize}
-        \item Value semantics: always copy the object. Time- and Space-costing.
+        \item Value semantics: always copy the object. Time- and space-costing.
         \item Reference semantics: avoid copying.
         \begin{itemize}
             \item But if \ttt{b} is destroyed, should we destroy the object that \ttt{b} points to?
@@ -390,6 +398,9 @@ a = b;
         \item Increase the counter when a new handle is pointing to it.
         \item Decrease the counter when a handle no longer points to it.
         \item \textbf{When the counter is decreased to zero, delete the object!}
+        \begin{itemize}
+            \item ``\textit{A man is dead when he is forgotten.}''
+        \end{itemize}
     \end{itemize}
 \end{frame}
 
