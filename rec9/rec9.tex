@@ -556,7 +556,7 @@ Vector::Vector(std::size_t n, int val) // Correct.
 void create_window(std::size_t height,
                    std::size_t width = 80);
 void craete_window(std::size_t height = 24, // OK.
-                   std::szie_t width) {
+                   std::size_t width) {
   // ...
 }
     \end{cpp}
@@ -607,15 +607,15 @@ int main() {
 \end{frame}
 
 \begin{frame}[fragile]{Some Helpful Macros}
-    To disable assertions, we can use the \ttt{NDEBUG} macro.
+    To disable assertions, we can \ttt{\#define} the \ttt{NDEBUG} macro textbf{at the very beginning}.
     \begin{cpp}
+#define NDEBUG
+#include <cassert>
+#include <iostream>
 int main() {
   int a, b;
   std::cin >> a >> b;
-#define NDEBUG
   assert(b != 0); // This assertion will not be performed.
-#undef NDEBUG
-  assert(b != 0); // This assertion will be performed.
   // ...
 }
     \end{cpp}
