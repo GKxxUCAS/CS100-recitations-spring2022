@@ -42,7 +42,7 @@ class Shape {
     return *this;
   }
   ~Shape() {
-    if (!--bp->use)
+    if (bp && !--bp->use)
       delete bp;
   }
 

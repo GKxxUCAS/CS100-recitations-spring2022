@@ -151,7 +151,7 @@ class Widget : public Uncopyable {
         \item Every operation that relies on such relationship cannot be performed, unless in the subclass or \bluett{friend} of the subclass.
         \begin{itemize}
             \item upcasting and downcasting
-            \item Accessing base members
+            \item accessing base members
             \item dynamic binding
             \item ......
         \end{itemize}
@@ -237,8 +237,21 @@ class Circle : public Shape_base {
 \end{frame}
 
 \begin{frame}[fragile]{Virtual Copy Function}
-    How can we copy an object correctly?
+    How can we copy an object correctly?\par
     \pause
+    \textbf{DO NOT} use downcasting like this!!
+    \begin{cpp}
+Shape_base *clone(Shape_base const *ptr) {
+  if (typeid(*ptr) == typeid(Rectangle))
+    return new Rectangle(dynamic_cast<Rectangle &>(*ptr));
+  else
+    return new Circle(dynamic_cast<Circle &>(*ptr));
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Virtual Copy Function}
+    Use a group of virtual functions instead.
     \begin{cpp}
 class Shape_base {
  public:
@@ -446,7 +459,7 @@ class Shape {
       ++bp->use;
   }
   ~Shape() {
-    if (!--bp->use)
+    if (bp && !--bp->use)
       delete bp;
   }
 };
