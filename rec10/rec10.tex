@@ -26,11 +26,43 @@
     \tableofcontents
 \end{frame}
 
-\section{Copy and Swap}
+\section{Review}
 
-\begin{frame}{Contents}
-    \tableofcontents[currentsection]
+\begin{frame}{Review: Inheritance}
+    Inheritance:
+    \begin{itemize}
+        \item \textbf{`is-a'} relationship
+        \item Every object of subclass type contains an object of the base type. Every member except ctors and dtors is inherited, no matter what access level it is of.
+        \item Subclass cannot affect behaviors of operations performed on base objects.
+        \pause
+        \item Behavior of ctors and dtors?
+    \end{itemize}
 \end{frame}
+
+\begin{frame}{Review: Dynamic Binding}
+    Dynamic binding:
+    \begin{itemize}
+        \item A reference or pointer to the base class can be bound to an object of the subclass.
+        \item When a \virtual function is called \textbf{through the reference or pointer to the base class}, it will call the correct version according to the dynamic type of that object.
+        \item Any polymorphic class must have a \virtual dtor. Why?
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Review: Abstract Class}
+    Pure virtual functions and abstract classes:
+    \begin{itemize}
+        \item Definition of pure \virtual functions.
+        \item A class with at least one pure \virtual function is an \textbf{abstract class}.
+        \item Abstract classes cannot be instantiated. Pure virtual function without definition cannot be called.
+        \item The subclass is still abstract if one of the pure \virtual functions in its base class is not overridden.
+        \pause
+        \item \textbf{Inheritance of interface} vs \textbf{inheritance of implementation}
+    \end{itemize}
+\end{frame}
+
+\section{Copy Control}
+
+\subsection{Copy and Swap}
 
 \begin{frame}[fragile]{Swap of Vector}
     The \ttt{std::swap} (defined in \ttt{<algorithm>}):
@@ -112,11 +144,7 @@ class Vector {
     \end{cpp}
 \end{frame}
 
-\section{Prevent Copying: An Interesting Way}
-
-\begin{frame}{Contents}
-    \tableofcontents[currentsection]
-\end{frame}
+\subsection{Prevent Copying: An Interesting Way}
 
 \begin{frame}{Prevent Copying}
     Make the compiler unable to synthesize the copying oeprations?
@@ -581,7 +609,7 @@ class Shape {
 
 \begin{frame}{Reading Materials}
     \begin{itemize}
-        \item The ideas in this slides are from \textit{Ruminations on C++} Chapter 5, 6, 7. Chapter 8 is related to Problem 3 in HW5. Chapter 9 and 10 talks about an interesting example.
+        \item The ideas in this slides are from \textit{Ruminations on C++} Chapter 5 - 7. Chapter 8 is related to Problem 3 in HW5. An interesting example is in Chapter 9 - 10.
         \item \textit{Effective C++} Item 15, 17 talks about something else related.
         \item \textit{C++ Primer} Chapter 12 (section 12.1) introduces smart pointers.
         \item To know about how to use smart pointers properly, see \textit{Effective Modern C++} Item 18 - 22.
