@@ -309,7 +309,7 @@ class Shape {
 \begin{frame}[fragile]{Defining a Surrogate}
     \begin{itemize}
         \item All other classes are \textbf{implementation details}, so all their members should be \private (or \bluett{protected}).
-        \item Declare \ttt{Shape} as a \bluett{friend} of them.
+        \item Declare \ttt{Shape} as a \bluett{friend} of \ttt{Shape\_base}.
         \item Provide two interfaces \ttt{make\_rectangle} and \ttt{make\_circle}.
         \item \blue{Resource Aquisition Is Initialization, RAII.}
         \pause
