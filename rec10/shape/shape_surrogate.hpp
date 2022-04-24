@@ -8,11 +8,12 @@ class Shape_base {
 
   virtual double perimeter() const = 0;
   virtual double area() const = 0;
+  virtual void stretch(double) = 0;
+  virtual Shape_base *clone() const = 0;
 
  protected:
   virtual ~Shape_base() = default;
   Shape_base() = default;
-  virtual Shape_base *clone() const = 0;
 };
 
 class Shape {
@@ -27,6 +28,10 @@ class Shape {
   }
   double area() const {
     return bp->area();
+  }
+  void stretch(double m) {
+    if (bp)
+      bp->stretch(m);
   }
   bool is_null() const {
     return !bp;
@@ -48,7 +53,6 @@ class Shape {
 };
 
 class Rectangle : public Shape_base {
-  friend class Shape;
   friend Shape make_rectangle(double, double);
 
   double height, width;
@@ -60,8 +64,12 @@ class Rectangle : public Shape_base {
   virtual double area() const override {
     return height * width;
   }
+  virtual void stretch(double m) override {
+    height *= m;
+    width *= m;
+  }
   virtual Rectangle *clone() const override {
-    return new Rectangle(height, width);
+    return new Rectangle{height, width};
   }
 };
 
@@ -70,7 +78,6 @@ inline Shape make_rectangle(double h, double w) {
 }
 
 class Circle : public Shape_base {
-  friend class Shape;
   friend Shape make_circle(double);
 
   double radius;
@@ -82,8 +89,11 @@ class Circle : public Shape_base {
   virtual double area() const override {
     return M_PI * radius * radius;
   }
+  virtual void stretch(double m) override {
+    radius *= m;
+  }
   virtual Circle *clone() const override {
-    return new Circle(radius);
+    return new Circle{radius};
   }
 };
 

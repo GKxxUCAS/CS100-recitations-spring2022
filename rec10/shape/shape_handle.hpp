@@ -8,8 +8,11 @@ class Shape_base {
 
   int use{1};
 
+  virtual Shape_base *clone() const = 0;
+
   virtual double perimeter() const = 0;
   virtual double area() const = 0;
+  virtual void stretch(double) = 0;
 
  protected:
   virtual ~Shape_base() = default;
@@ -17,6 +20,9 @@ class Shape_base {
 };
 
 class Shape {
+  friend Shape make_rectangle(double, double);
+  friend Shape make_circle(double);
+
   Shape_base *bp;
 
  public:
@@ -28,6 +34,15 @@ class Shape {
   }
   bool is_null() const {
     return !bp;
+  }
+  void stretch(double m) {
+    if (bp) {
+      if (bp->use > 1) {
+        --bp->use;
+        bp = bp->clone();
+      }
+      bp->stretch(m);
+    }
   }
   Shape(const Shape &other) : bp(other.bp) {
     if (bp)
@@ -56,13 +71,26 @@ class Rectangle : public Shape_base {
   double height, width;
 
   Rectangle(double h, double w) : height(h), width(w) {}
+
+  virtual Rectangle *clone() const override {
+    return new Rectangle{height, width};
+  }
+
   virtual double perimeter() const override {
     return 2 * (height + width);
   }
   virtual double area() const override {
     return height * width;
   }
+  virtual void stretch(double m) override {
+    height *= m;
+    width *= m;
+  }
 };
+
+inline Shape make_rectangle(double h, double w) {
+  return new Rectangle{h, w};
+}
 
 class Circle : public Shape_base {
   friend Shape make_circle(double);
@@ -70,12 +98,24 @@ class Circle : public Shape_base {
   double radius;
 
   Circle(double r) : radius(r) {}
+
+  virtual Circle *clone() const override {
+    return new Circle{radius};
+  }
+
   virtual double perimeter() const override {
     return 2 * M_PI * radius;
   }
   virtual double area() const override {
     return M_PI * radius * radius;
   }
+  virtual void stretch(double m) override {
+    radius *= m;
+  }
 };
+
+inline Shape make_circle(double r) {
+  return new Circle{r};
+}
 
 #endif // CS100_DEMO_SHAPE_HPP

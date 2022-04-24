@@ -359,6 +359,38 @@ class Shape {
     Use the copy-and-swap technique to define an assignment operator.
 \end{frame}
 
+\begin{frame}[fragile]{Modification}
+    Suppose we have some form of modification:
+    \begin{cpp}
+class Shape_base {
+  virtual void stretch(double) = 0;
+};
+class Rectangle : public Shape_base {
+  virtual void stretch(double m) override {
+    height *= m; width *= m;
+  }
+};
+class Circle : public Shape_base {
+  virtual void stretch(double m) override {
+    radius *= m;
+  }
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Modification}
+    Bitwise-const vs logical-const.
+    \begin{cpp}
+class Shape {
+ public:
+  void stretch(double m) { // Should this be const?
+    if (bp)
+      bp->stretch(m);
+  }
+};
+    \end{cpp}
+\end{frame}
+
 \begin{frame}[fragile]{Use the Surrogate}
     Now we can use the shapes smoothly.
     \begin{cpp}
@@ -504,16 +536,16 @@ Shape &operator=(const Shape &other) {
     \begin{cpp}
 class Shape {
  public:
-  void some_modification(Type params) {
+  void stretch(double m) {
     if (bp)
-      bp->some_modification(params);
+      bp->stretch(m);
   }
 };
     \end{cpp}
     \pause
     Suppose \ttt{Shape a = b;}. After modification on \ttt{a}, what if we still want \ttt{b} to hold the original object?
     \begin{cpp}
-a.some_modification(/* ... */);
+a.stretch(2);
     \end{cpp}
 \end{frame}
 
@@ -525,13 +557,13 @@ a.some_modification(/* ... */);
     \begin{cpp}
 class Shape {
  public:
-  void some_modification(Type params) {
+  void stretch(double m) {
     if (bp) {
-      auto original = bp;
-      bp = original->clone();
-      if (!--original->use)
-        delete original;
-      bp->some_modification(params);
+      if (bp->use > 1) {
+        --bp->use;
+        bp = bp->clone();
+      }
+      bp->stretch(m);
     }
   }
 };
