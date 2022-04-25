@@ -440,7 +440,7 @@ for (int i = 0; i < n; ++i) {
 
 \begin{frame}[fragile]{Use of the Original Design}
     \begin{cpp}
-Shape *shapes[SIZE];
+Shape_base *shapes[SIZE];
 for (int i = 0; i < n; ++i) {
   if (some_condition(i))
     shapes[i] = new Rectangle(f(), g());
