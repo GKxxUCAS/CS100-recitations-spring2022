@@ -323,7 +323,7 @@ class Circle : public Shape_base {
 class Shape {
   Shape_base *bp;
  public:
-  Shape_base() : bp(nullptr) {}
+  Shape() : bp(nullptr) {}
   double perimeter() const {
     return bp->perimeter();
   }
