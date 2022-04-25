@@ -1,7 +1,7 @@
 #ifndef CS100_DEMO_SHAPE_HPP
 #define CS100_DEMO_SHAPE_HPP
 
-#include <cmath>
+constexpr double PI = 3.14159265;
 
 class Shape_base {
   friend class Shape;
@@ -30,8 +30,7 @@ class Shape {
     return bp->area();
   }
   void stretch(double m) {
-    if (bp)
-      bp->stretch(m);
+    bp->stretch(m);
   }
   bool is_null() const {
     return !bp;
@@ -84,10 +83,10 @@ class Circle : public Shape_base {
 
   Circle(double r) : Shape_base(), radius(r) {}
   virtual double perimeter() const override {
-    return 2 * M_PI * radius;
+    return 2 * PI * radius;
   }
   virtual double area() const override {
-    return M_PI * radius * radius;
+    return PI * radius * radius;
   }
   virtual void stretch(double m) override {
     radius *= m;

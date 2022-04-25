@@ -412,8 +412,7 @@ class Circle : public Shape_base {
 class Shape {
  public:
   void stretch(double m) { // Should this be const?
-    if (bp)
-      bp->stretch(m);
+    bp->stretch(m);
   }
 };
     \end{cpp}
@@ -585,8 +584,7 @@ Shape &operator=(const Shape &other) {
 class Shape {
  public:
   void stretch(double m) {
-    if (bp)
-      bp->stretch(m);
+    bp->stretch(m);
   }
 };
     \end{cpp}
@@ -606,13 +604,11 @@ a.stretch(2);
 class Shape {
  public:
   void stretch(double m) {
-    if (bp) {
-      if (bp->use > 1) {
-        --bp->use;
-        bp = bp->clone();
-      }
-      bp->stretch(m);
+    if (bp->use > 1) {
+      --bp->use;
+      bp = bp->clone();
     }
+    bp->stretch(m);
   }
 };
     \end{cpp}
