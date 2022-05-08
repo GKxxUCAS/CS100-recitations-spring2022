@@ -1,0 +1,50 @@
+\begin{frame}{Operator Overloading}
+    \begin{itemize}
+        \item At least one class-type parameter.
+        \item Cannot change the \textbf{precedence} or the \textbf{associativity}.
+    \end{itemize}
+    Operators that may be overloaded:
+    \begin{center}
+        \begin{tabular}{|cccccc|}
+            \hline
+            \ttt{+} & \ttt{-} & \ttt{*} & \ttt{/} & \ttt{\%} & \ttt{\^{}}\\
+            \ttt{\&} & \ttt{|} & \ttt{\~} & \ttt{!} & \redtt{,} & \ttt{=}\\
+            \ttt{<} & \ttt{>} & \ttt{<=} & \ttt{>=} & \ttt{++} & \ttt{--}\\
+            \ttt{<<} & \ttt{>>} & \ttt{==} & \ttt{!=} & \redtt{\&\&} & \redtt{||}\\
+            \ttt{+=} & \ttt{-=} & \ttt{/=} & \ttt{\%=} & \ttt{\^{}=} & \ttt{\&=}\\
+            \ttt{|=} & \ttt{*=} & \ttt{<<=} & \ttt{>>=} & \ttt{[]} & \ttt{()}\\
+            \ttt{->} & \ttt{->*} & \ttt{new} & \ttt{new[]} & \ttt{delete} & \ttt{delete[]}\\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Operator Overloading}
+    Operators that may not be overloaded:
+    \begin{center}
+        \begin{tabular}{|cccc|}
+            \hline
+            \ttt{::} & \ttt{.} & \ttt{.*} & \ttt{?:}\\
+            \hline
+        \end{tabular}
+    \end{center}
+    Overloaded operator is a function:
+    \begin{itemize}
+        \item A special name: the \bluett{operator} keyword followed by the symbol of the operator.
+        \item Non-member function: Operands are the parameters from left to right.
+        \item Member function: The leftmost operand is implicitly bound to \bluett{this}. Other operands are the parameters from left to right.
+    \end{itemize}
+    \pause
+    \textit{More Effective C++} Item 7 says that \blue{never overload operator \ttt{\&\&}, \ttt{||} and \ttt{,}}. Why?
+\end{frame}
+
+\begin{frame}{Operator Overloading}
+    We have seen that
+    \begin{itemize}
+        \item The IO library overloads \bluett{operator<<} and \bluett{operator>>}.
+        \item The string library overloads \bluett{operator+} and \bluett{operator[]}.
+        \begin{itemize}
+            \item Why won't `\ttt{"ABC" + "DEF"}' compile?
+        \end{itemize}
+    \end{itemize}
+\end{frame}

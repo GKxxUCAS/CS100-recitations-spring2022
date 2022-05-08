@@ -1,0 +1,49 @@
+\documentclass{beamer}
+
+\usepackage{../cppenv}
+\usepackage{../recdefs}
+
+\usetheme{Rochester}
+\usecolortheme{crane}
+
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\done}{\rlap{\(\square\)}{\raisebox{2pt}{\large\hspace{1pt}\cmark}}\hspace{-2.5pt}}
+
+\title{CS100 Recitation 11}
+\author{GKxx}
+\date{May 2, 2022}
+
+\AtBeginSubsection{
+    \begin{frame}{Contents}
+        \tableofcontents[currentsection, currentsubsection]
+    \end{frame}
+}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}{Contents}
+    \tableofcontents
+\end{frame}
+
+\section{Overview: A Federation of Languages}
+
+\include{overview}
+
+\section{Operator Overloading: First Glance}
+
+\include{operator}
+
+\section{The IO Library}
+
+\include{io_library}
+
+\section{Sequential Containers}
+
+\include{sequential}
+
+\end{document}
