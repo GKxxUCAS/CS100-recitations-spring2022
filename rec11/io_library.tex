@@ -1,3 +1,5 @@
+\section{The IO Library}
+
 \subsection{\ttt{<iostream>}}
 
 \begin{frame}[fragile]{\ttt{iostream}, \ttt{cin} and \ttt{cout}}
@@ -53,7 +55,7 @@ std::getline(std::cin, line);
     \end{cpp}
     \pause
     \begin{itemize}
-        \item Note: \ttt{std::getline} reads until the first newline character (`\textbackslash n'), and throws away that newline character.
+        \item \ttt{std::getline} reads until the first newline character (`\textbackslash n'), and throws away that newline character.
         \item What happens?
         \begin{cpp}
 int n; std::cin >> n;
@@ -76,6 +78,7 @@ std::getline(std::cin, line);
         \item \ttt{fixed}, \ttt{setprecision}, \ttt{scientific}
         \item \dots\dots
     \end{itemize}
+    \textit{C++ Primer} 17.5
 \end{frame}
 
 \subsection{\ttt{<fstream>}}

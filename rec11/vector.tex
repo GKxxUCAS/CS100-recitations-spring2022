@@ -1,0 +1,155 @@
+\subsection{\ttt{std::vector}}
+
+\begin{frame}[fragile]{Templated Type}
+    \begin{cpp}
+std::vector<int> vi;
+std::vector<std::string> vs;
+std::vector<Widget> vw;
+std::vector<std::vector<double>> vvd;
+    \end{cpp}
+    \begin{itemize}
+        \item \textbf{Instantiation} of a class template
+        \item Template arguments: Must be known at compile-time!
+        \item C++ is statically-typed!
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Construction}
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+vector<T> v1
+            \end{cpp} & \footnotesize Default initialization. \ttt{v1} is empty.\\
+            \begin{cpp}
+vector<T> v2(v1)
+            \end{cpp} & \footnotesize Copy initialization. \ttt{v2} is a copy of \ttt{v1}.\\
+            \begin{cpp}
+vector<T> v2 = v1
+            \end{cpp} & \footnotesize Equivalent to \ttt{vector<T> v2(v1)}.\\
+            \begin{cpp}
+vector<T> v3(n, val)
+            \end{cpp} & \footnotesize \ttt{v3} contains \ttt{n} copies of \ttt{val}.\\
+            \begin{cpp}
+vector<T> v4(n)
+            \end{cpp} & \footnotesize \ttt{v4} contains \ttt{n} default-initialized elements.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    Every STL container has \textbf{value semantics}. Copy of a container will copy every element.
+\end{frame}
+
+\begin{frame}[fragile]{Construction}
+    Since C++11, one more way of construction:
+    \begin{cpp}
+vector<T> v5 = {a, b, c, d};
+vector<T> v6{a, b, c, d};   // Equivalent way.
+    \end{cpp}
+    For example,
+    \begin{cpp}
+vector<int> v = {2, 3, 5, 7, 11};
+    \end{cpp}
+    \pause
+    However, this causes troubles to the widely-used \textbf{braced-initialization}:
+    \begin{cpp}
+Point2d p{3, 4}; // Call Point2d::Point2d(double, double)
+vector<int> v(10, 20); // v has 10 elements, each 20.
+vector<int> v{10, 20}; // v has 2 elements: 10, 20.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Construction}
+    \ttt{string} also supports such initialization.
+    \begin{cpp}
+string s1 = {'a', 'b', 'c'}; // s1 is "abc"
+string s2(48, 'c'); // s2 is "ccc......c"
+string s3{48, 'c'}; // s3 is "0c"
+    \end{cpp}
+    Allowing initialization from a braced list is now seen as \textbf{an error in the design}. (\textit{Effective Modern C++} Item 7)
+    \begin{itemize}
+        \item Be careful when using braced initialization for every STL container.
+        \item Avoid such design in your own classes.
+    \end{itemize}
+    \pause
+    Empty braces is undoubtedly default initialization. It calls the default constructor.
+    \begin{cpp}
+vector<int> v{}; // Equivalent to vector<int> v;
+                 // Calls the default constructor.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Operations}
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+v.empty()
+            \end{cpp} & \footnotesize Returns \bluett{true} iff \ttt{v} is empty.\\
+            \begin{cpp}
+v.size()
+            \end{cpp} & \footnotesize Returns the number of elements in \ttt{v}.\\
+            \begin{cpp}
+v.push_back(t)
+            \end{cpp} & \footnotesize Adds an element with value \ttt{t} to end of \ttt{v}.\\
+            \begin{cpp}
+v[n]
+            \end{cpp} & \footnotesize Returns a \textbf{reference} to the elmeent indexed \ttt{n}.\\
+            \begin{cpp}
+v = {a, b, c}
+            \end{cpp} & \footnotesize Replaces the elements in \ttt{v} with a copies of \ttt{a, b, c}.\\
+            \begin{cpp}
+==, !=
+            \end{cpp} & \footnotesize Equaltiy and inequality.\\
+            \begin{cpp}
+<, <=, >, >=
+            \end{cpp} & \footnotesize Lexicographical-order comparison.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    \begin{itemize}
+        \item \ttt{v.size()} returns a value of type \ttt{vector<T>::size\_type}.
+        \item Compare it with \ttt{string}'s operation table.
+        \begin{itemize}
+            \item In fact, \ttt{string} also supports \ttt{push\_back}.
+        \end{itemize}
+        \item Why doesn't \ttt{vector} provide concatenation \bluett{operator+}?
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Access by Subscript}
+    For containers that supports \bluett{operator[]} (\ttt{string}, \ttt{vector}, ...):
+    \begin{itemize}
+        \item \bluett{operator[]} does not check boundaries.
+        \item Every sequential container that provides \bluett{operator[]} also provides the \ttt{at} member function. \ttt{v.at(n)} will \bluett{throw} an exception if \ttt{n} is out of range.
+        \item It is the programmer's responsibility to ensure every subscript is valid.
+        \begin{cpp}
+std::vector<int> v;
+std::cout << v[0] << std::endl; // Error!
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Range-based \bluett{for} Loops}
+    Also works for \ttt{vector}:
+    \begin{cpp}
+std::vector<int> v = {2, 3, 5, 7, 11, 13};
+for (auto &x : v)
+  x = x * x;
+for (auto x : v)
+  std::cout << x << " ";
+std::cout << std::endl;
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Range-based \bluett{for} Loops}
+    \textbf{Never} change the size of the container within the range-\bluett{for}!
+    \begin{cpp}
+for (decltype(v.size()) i = 0; i != v.size(); ++i)
+  if (v[i] % 2 == 1)
+    v.push_back(v[i]); // ok
+for (auto x : v)
+  if (x % 2 == 1)
+    v.push_back(x); // Probably causes undefined behavior!
+    \end{cpp}
+    This rule also applies to \ttt{string}, since their way of growing is similar.
+\end{frame}

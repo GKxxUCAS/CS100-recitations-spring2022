@@ -1,0 +1,185 @@
+\section{\ttt{string}, \ttt{vector} and Iterators}
+
+\subsection{\ttt{std::string}}
+
+\begin{frame}[fragile]{Construction}
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+string s1;
+            \end{cpp} & Default initialization. \ttt{s1} contains \ttt{""}.\\
+            \begin{cpp}
+string s2(s1);
+            \end{cpp} & Copy initialization. \ttt{s2} is a copy of \ttt{s1}.\\
+            \begin{cpp}
+string s2 = s1;
+            \end{cpp} & Equivalent to \ttt{string s2(s1)}.\\
+            \begin{cpp}
+string s3("hello");
+            \end{cpp} & \ttt{s3} is a copy of the string literal.\\
+            \begin{cpp}
+string s3 = "hello";
+            \end{cpp} & Equivalent to \ttt{string s3("hello")}.\\
+            \begin{cpp}
+string s4(n, c);
+            \end{cpp} & Initialize \ttt{s4} with \ttt{n} copies of a \bluett{char }\ttt{c}.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    \begin{itemize}
+        \item A string object is \textbf{NOT} null-terminated!
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{IO}
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+os << s
+            \end{cpp} & Writes \ttt{s} onto output stream \ttt{os}.\\
+            \begin{cpp}
+is >> s
+            \end{cpp} & Reads a string from \ttt{is} into \ttt{s}.\\
+            \begin{cpp}
+getline(is, s)
+            \end{cpp} & Reads a line of input from \ttt{is} into \ttt{s}.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    \begin{itemize}
+        \item \ttt{is >> s} starts reading \textbf{from the first non-whitespace character}, and reads until the next whitespace character. The whitespace in the end \textbf{is not read and still in the stream}.
+        \item \ttt{getline(is, s)} starts reading \textbf{from the next character} and reads until the first newline character. The newline character is \textbf{read, but not stored into \ttt{s}, and thrown away}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Operations}
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+s.empty()
+            \end{cpp} & \footnotesize Returns \bluett{true} iff \ttt{s} is empty (\ttt{""}).\\
+            \begin{cpp}
+s.size()
+            \end{cpp} & \footnotesize Returns the number of characters in \ttt{s}.\\
+            \begin{cpp}
+s[n]
+            \end{cpp} & \footnotesize Returns a \textbf{reference} to the character indexed \ttt{n} in \ttt{s}.\\
+            \begin{cpp}
+s1 + s2
+            \end{cpp} & \footnotesize Returns a \ttt{string} that is the concatenation of \ttt{s1} and \ttt{s2}.\\
+            \begin{cpp}
+s1 = s2
+            \end{cpp} & \footnotesize Copy-assignment. Replaces the content in \ttt{s1} with a \textbf{copy} of \ttt{s2}.\\
+            \begin{cpp}
+s1 += s2
+            \end{cpp} & \footnotesize Equivalent \red{(?)} to \ttt{s1 = s1 + s2}.\\
+            \begin{cpp}
+==,!=
+            \end{cpp} & \footnotesize Equality and inequality.\\
+            \begin{cpp}
+<,<=,>,>=
+            \end{cpp} & \footnotesize Lexicographical-order comparison.\\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Operations}
+    Concatenation: \ttt{s1 + s2}.
+    \begin{itemize}
+        \item \ttt{s1} and \ttt{s2} can be a C-style string (\const\bluett{char }\ttt{*}) or a \bluett{char}.
+        \item At least one of \ttt{s1} and \ttt{s2} should be \ttt{std::string}!
+        \item \ttt{s + "a" + "b"} compiles, while \ttt{"a" + "b" + s} does not compile. Why?
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Operations}
+    \ttt{s1 += s2} and \ttt{s1 = s1 + s2} are \textbf{NOT} actually equivalent:
+    \begin{cpp}
+auto n = 1000000;
+std::string s = "";
+for (auto i = 0; i != n; ++i)
+  s += "a";
+s = "";
+for (auto i = 0; i != n; ++i)
+  s = s + "a";
+    \end{cpp}
+    The first loop takes \(O(n)\) time, while the second takes \(O\left(n^2\right)\)!
+    \begin{itemize}
+        \item Always prefer compound assignment operators.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Operations}
+    \ttt{s.size()} returns a value of the type \ttt{std::string::size\_type}.
+    \begin{itemize}
+        \item An unsigned integer type.
+        \item It is guaranteed to be able to store the length of any string.
+        \item It is highly possible that it is \ttt{std::size\_t}, but not guaranteed.
+    \end{itemize}
+    \pause
+    \ttt{s.length()} is equivalent to \ttt{s.size()}, but \ttt{s.size()} is preferred. \red{(Why?)}
+\end{frame}
+
+\begin{frame}[fragile]{Examples}
+    Example: Convert a nonnegative integer to a string. Add leading zeros.
+    \begin{cpp}
+inline std::string convert(int x) {
+  auto s = std::to_string(x);
+  return std::string(9 - s.size(), '0') + s;
+}
+    \end{cpp}
+    \pause
+    Example: Count the number of upper-case letters, and convert them to lower-case.
+    \begin{cpp}
+int upper_cnt = 0;
+for (decltype(s.size()) i = 0; i != s.size(); ++i)
+  if (std::isupper(s[i])) {
+    ++upper_cnt;
+    s[i] = std::tolower(s[i]);
+  }
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Range-based \bluett{for} Loops}
+    Count the number of upper-case letters:
+    \begin{cpp}
+int upper_cnt = 0;
+for (char c : s)
+  if (std::isupper(c))
+    ++upper_cnt;
+    \end{cpp}
+    \pause
+    Convert upper-case letters to lower:
+    \begin{cpp}
+for (char &c : s)       // '&' is necessary!
+  c = std::tolower(c);
+    \end{cpp}
+    \pause
+    \begin{itemize}
+        \item It is common to use \bluett{auto} in range-\bluett{for}.
+        \item Looks like \ttt{Python} \bluett{for} loops?
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example}
+    Suppose \ttt{s} contains an English sentence. Convert every letter of the first word into upper-case.
+    \pause
+    \begin{cpp}
+for (decltype(s.size()) i = 0;
+    i != s.size() && !std::isspace(s[i]); ++i)
+  s[i] = std::toupper(s[i]);
+    \end{cpp}
+    \pause
+    Range-\bluett{for}:
+    \begin{cpp}
+for (auto &c : s) {
+  if (std::isspace(c))
+    break;
+  c = std::toupper(c);
+}
+    \end{cpp}
+\end{frame}

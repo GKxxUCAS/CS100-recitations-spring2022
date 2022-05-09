@@ -7,8 +7,11 @@
 \usecolortheme{crane}
 
 \usepackage{pifont}
-\newcommand{\cmark}{\ding{51}}
-\newcommand{\done}{\rlap{\(\square\)}{\raisebox{2pt}{\large\hspace{1pt}\cmark}}\hspace{-2.5pt}}
+\newcommand{\tick}{\ding{51}}
+\newcommand{\cross}{\ding{55}}
+\newcommand{\done}{\rlap{\(\square\)}{\raisebox{2pt}{\large\hspace{1pt}\tick}}\hspace{-2.5pt}}
+
+\usepackage{hyperref}
 
 \title{CS100 Recitation 11}
 \author{GKxx}
@@ -30,20 +33,15 @@
     \tableofcontents
 \end{frame}
 
-\section{Overview: A Federation of Languages}
-
 \include{overview}
-
-\section{Operator Overloading: First Glance}
 
 \include{operator}
 
-\section{The IO Library}
-
 \include{io_library}
 
-\section{Sequential Containers}
-
-\include{sequential}
+% Sequential containers
+\include{string}
+\include{vector}
+\include{iterators}
 
 \end{document}
