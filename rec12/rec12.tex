@@ -1,0 +1,37 @@
+\documentclass{beamer}
+
+\usepackage{../cppenv}
+\usepackage{../recdefs}
+
+\usetheme{EastLansing}
+\usecolortheme{wolverine}
+
+\usepackage{pifont}
+\newcommand{\tick}{\ding{51}}
+\newcommand{\cross}{\ding{55}}
+
+\title{CS100 Recitation 12}
+\author{GKxx}
+\date{May 16, 2022}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}{Contents}
+    \tableofcontents
+\end{frame}
+
+\AtBeginSection{
+    \begin{frame}{Contents}
+        \tableofcontents[currentsection]
+    \end{frame}
+}
+
+\include{sequential}
+
+\include{algo}
+
+\end{document}

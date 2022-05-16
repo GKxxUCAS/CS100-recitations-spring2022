@@ -1,0 +1,144 @@
+\section{Algorithms}
+
+\begin{frame}[fragile]{Algorithms in STL}
+    Sort a \ttt{vector}, drop duplicates, and obtain the number of different values.
+    \begin{cpp}
+std::vector<int> v = some_value();
+std::sort(v.begin(), v.end());
+auto it = std::unique(v.begin(), v.end());
+int n = it - v.begin();
+    \end{cpp}
+\end{frame}
+
+\begin{frame}{Algorithms in STL}
+    See \textit{C++ Primer} Appendix A.2.
+    \begin{itemize}
+        \item Iterator ranges
+        \item Predicates.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Customize Operations}
+    Sort the \ttt{vector<Point2d>} in order of the \ttt{x} coordinate.
+    \pause
+    \begin{itemize}
+        \item Overload \bluett{operator<} for \ttt{Point2d}?
+        \pause
+        \item Pass a comparator function:
+        \begin{cpp}
+inline bool comp(const Point2d &lhs, const Point2d &rhs) {
+  return lhs.get_x() < rhs.get_x();
+}
+std::sort(v.begin(), v.end(), comp);
+        \end{cpp}
+    \end{itemize}
+    \pause
+    It's better to write it as a \bluett{static} function of \ttt{Point2d}:
+    \begin{cpp}
+struct Point2d {
+  static bool cmp_x(const Point2d &lhs, const Point2d &rhs) {
+    return lhs.get_x() < rhs.get_x();
+  }
+};
+std::sort(v.begin(), v.end(), Point2d::cmp_x);
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Customize Operations}
+    Find the first element less than 10:
+    \begin{cpp}
+inline bool less_than_10(int x) {
+  return x < 10;
+}
+auto pos = std::find_if(v.begin(), v.end(), less_than_10);
+    \end{cpp}
+    \pause
+    Find the first element less than \ttt{k}? (\ttt{k} is runtime-determined)
+    \pause
+    \begin{cpp}
+struct Less_than {
+  int k;
+  Less_than(int x) : k(x) {}
+  bool operator()(int x) const {
+    return x < k;
+  }
+};
+auto pos = std::find_if(v.begin(), v.end(), Less_than(k));
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Overloading \bluett{operator()}}
+    \begin{cpp}
+struct Less_than {
+  int k;
+  Less_than(int x) : k(x) {}
+  bool operator()(int x) const {
+    return x < k;
+  }
+};
+auto pos = std::find_if(v.begin(), v.end(), Less_than(k));
+    \end{cpp}
+    \begin{itemize}
+        \item \ttt{Less\_than(k)} creates an object of the type \ttt{Less\_than}.
+        \item \ttt{lt(x)} is equivalent to \ttt{lt.operator()(x)}, which returns true when \ttt{x < lt.k}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Overloading \bluett{operator()}}
+    Rewrite \ttt{Point2d::cmp\_x}:
+    \begin{cpp}
+struct Cmp_x {
+  bool operator()(const Point2d &lhs, const Point2d &rhs) const {
+    return lhs.get_x() < rhs.get_x();
+  }
+};
+std::sort(v.begin(), v.end(), Cmp_x{});
+    \end{cpp}
+    or equivalently,
+    \begin{cpp}
+std::sort(v.begin(), v.end(), Cmp_x());
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Lambda: The First Glance}
+    An anonymous function.
+    \begin{cpp}
+std::sort(v.begin(), v.end(),
+    [](const Point2d &lhs, const Point2d &rhs) {
+      return lhs.get_x() < rhs.get_x();
+    });
+    \end{cpp}
+    \pause
+    Capture a variable:
+    \begin{cpp}
+auto pos = std::find_if(v.begin(), v.end(),
+    [k](int x) { return x < k; });
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Lambda: The First Glance}
+    \begin{cpp}
+auto f = [k](int x) { return x < k; };
+f(k)     // false
+f(k - 1) // true
+    \end{cpp}
+    What's the type of a lambda?\\
+    \pause
+    No one but the compiler knows.
+\end{frame}
+
+\begin{frame}{Callable in C++}
+    Callable in C:
+    \begin{itemize}
+        \item functions
+        \item pointers to functions
+    \end{itemize}
+    \pause
+    Callable in C++:
+    \begin{itemize}
+        \item functions
+        \item pointers to functions
+        \item lambdas
+        \item objects that have an \bluett{operator()} member.
+    \end{itemize}
+\end{frame}

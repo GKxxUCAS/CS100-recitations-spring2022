@@ -1,0 +1,259 @@
+\section{Sequential Containers}
+
+\begin{frame}{Overview}
+    Sequential containers from old STL:
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \ttt{vector} & Flexible-size array.\\
+            \ttt{deque} & Double-ended queue.\\
+            \ttt{list} & Doubly-linked list.\\
+            \ttt{string} & Specialized container for strings.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    Sequential containers added in C++11:
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \ttt{forward\_list} & Singly-linked list.\\
+            \ttt{array} & Encapsulates built-in array.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    Note: \ttt{array} requires an additional template argument: \ttt{array<T, N>}, where \ttt{N} must be an integer value known at compile-time.
+\end{frame}
+
+\begin{frame}{Type Aliases}
+    \begin{itemize}
+        \item \ttt{value\_type}
+        \item \ttt{size\_type}: Return-type of \ttt{size()}.
+        \item \ttt{difference\_type}: Return-type of subtracting two iterators.
+        \item \ttt{pointer}: \ttt{value\_type *}.
+        \item \ttt{reference}: \ttt{value\_type \&}.
+        \item \ttt{const\_pointer}: \ttt{const value\_type *}.
+        \item \ttt{const\_reference}: \ttt{const value\_type \&}.
+        \item \ttt{iterator}
+        \item \ttt{const\_iterator}: cannot modify the elements.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Obtaining Iterators}
+    Notes:
+    \begin{itemize}
+        \item On a \const container, \ttt{begin()} and \ttt{end()} return \ttt{const\_iterator}s.
+        \item \ttt{cbegin()} and \ttt{cend()} were added into the C++ standard since C++11.
+    \end{itemize}
+    \begin{cpp}
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator cbegin() const;
+    const_iterator cend() const;
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Construction}
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+C c;
+            \end{cpp} & Default construction.\\
+            \begin{cpp}
+C c1(c2);
+            \end{cpp} & Construct \ttt{c1} as a copy of \ttt{c2}.\\
+            \begin{cpp}
+C c(b, e);
+            \end{cpp} & Copy elements from the iterator range \ttt{[b,e)}.\\
+            \begin{cpp}
+C c{a,b,c,d,...}
+            \end{cpp} & List initialization.\\
+            \begin{cpp}
+C c(n);
+            \end{cpp} & \ttt{c} has \ttt{n} value-initialized elements.\\
+            \begin{cpp}
+C c(n, x);
+            \end{cpp} & \ttt{c} has \ttt{n} copies of \ttt{x}.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    Notes:
+    \begin{itemize}
+        \item Default construction for \ttt{array}: Default-initialization of every element.
+        \item Construction from an iterator range is not valid for \ttt{array}.
+        \item \ttt{C c(n);} is not valid for \ttt{string} or \ttt{array}.
+        \item \ttt{C c(n, x);} is not valid for \ttt{array}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Construction}
+    Copy elements from a \ttt{list} to initialize a \ttt{vector}?
+    \pause
+    \begin{cpp}
+std::list<int> l = some_value();
+std::vector<int> v(l.begin(), l.end());
+    \end{cpp}
+    \pause
+    What about copying them in reverse order?
+    \pause
+    \begin{cpp}
+std::vector<int> v2(l.rbegin(), l.rend());
+    \end{cpp}
+    \begin{itemize}
+        \item \ttt{rbegin()}, \ttt{rend()}, \ttt{crbegin()}, \ttt{crend()}
+        \item \ttt{reverse\_iterator}, \ttt{const\_reverse\_iterator}
+        \item Not valid for \ttt{forward\_iterator}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Inserting and Erasing Elements}
+    \begin{center}
+        \begin{tabular}{|c|ccc|}
+            \hline
+            & \ttt{push/pop\_back} & \ttt{push/pop\_front} & \ttt{insert/erase}\\
+            \hline
+            \ttt{vector} & \tick & \cross & slow\\
+            \ttt{deque} & \tick & \tick & slow\\
+            \ttt{list} & \tick & \tick & \tick\\
+            \ttt{forward\_list} & \cross & \tick & \cross\\
+            \ttt{array} & \cross & \cross & \cross\\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{insert} and \ttt{erase}}
+    Not for \ttt{array} or \ttt{forward\_list}:
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+c.insert(it, x)
+            \end{cpp} & Insert \ttt{x} \textbf{before} \ttt{it}.\\
+            \begin{cpp}
+c.erase(it)
+            \end{cpp} & Erase the element at position \ttt{it}.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    For \ttt{forward\_list}:
+    \begin{center}
+        \begin{tabular}{|ll|}
+            \hline
+            \begin{cpp}
+l.insert_after(it, x)
+            \end{cpp} & Insert \ttt{x} \textbf{after} \ttt{it}.\\
+            \begin{cpp}
+l.erase_after(it)
+            \end{cpp} & Erase the element \textbf{after} the position \ttt{it}.\\
+            \hline
+        \end{tabular}
+    \end{center}
+    Notes:
+    \begin{itemize}
+        \item \ttt{it} can be \ttt{iterator} or \ttt{const\_iterator}.
+        \item There are many overloads:
+        \begin{itemize}
+            \item \ttt{c.insert(it, n, x)}: Insert \ttt{n} copies of \ttt{x}.
+            \item \ttt{c.insert(it, b, e)}: Insert elements copied from iterator range.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Emplace}
+    With \textit{variadic templates}, \textit{universal references} and \textit{perfect forwarding}, C++11 introduces the `emplace' operations:
+    \begin{cpp}
+struct Point2d {
+  Point2d(double, double);
+};
+std::vector<Point2d> vp;
+vp.emplace_back(3.5, 6);
+std::deque<std::string> ds;
+ds.emplace_front(10, 'c');
+    \end{cpp}
+    \begin{itemize}
+        \item \ttt{emplace}, \ttt{emplace\_back}, \ttt{emplace\_front}.
+        \item \ttt{value\_type} need not to be \blue{copy-constructible} or \blue{copy-assignable}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Equality and Relational Operators}
+    \ttt{==, !=, <, <=, >, >=}.
+    \begin{itemize}
+        \item \ttt{==} and \ttt{!=} only rely on \ttt{operator==} of \ttt{value\_type}.
+        \item \ttt{<, <=, >, >=} only rely on \ttt{operator<} of \ttt{value\_type}.
+        \item Minimize the requirements on unknown types!
+        \pause
+        \item \ttt{std::equal} and \ttt{std::lexicographical\_compare}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Iterator Categories}
+    Iterators are classified into \textbf{five categories}: \blue{input-iterator}, \blue{output-iterator}, \blue{forward-iterator}, \blue{bidirectional-iterator}, \blue{random-access-iterator}.
+    \begin{itemize}
+        \item \ttt{vector}, \ttt{deque}, \ttt{string} and \ttt{array} have random-access-iterators.
+        \item \ttt{list} has bidirectional-iterator.
+        \item \ttt{forward\_list} has forward-iterator.
+    \end{itemize}
+    \pause
+    Operations:
+    \begin{itemize}
+        \item A \blue{forward-iterator} supports \ttt{operator*} (dereference), \ttt{operator++} (prefix and postfix incrementation), \ttt{operator==} and \ttt{operator!=}.
+        \item A \blue{bidirectional-iterator} \textbf{is a} forward-iterator, and it also supports \ttt{oprator--} (prefix and postfix decrementation).
+        \item A \blue{random-access-iterator} \textbf{is a} bidirectional-iterator, and it also supports \ttt{it1-it2}, \ttt{it+n}, \ttt{it-n}, \ttt{n+it}, \ttt{+=}, \ttt{-=}, \ttt{it[n]} and \ttt{<}, \ttt{<=}, \ttt{>}, \ttt{>=}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Iterator Categories}
+    Defined in \ttt{<iterator>}:
+    \begin{cpp}
+namespace std {
+  struct input_iterator_tag {};
+  struct output_iterator_tag {};
+  struct forward_iterator_tag : input_iterator_tag {};
+  struct bidirectional_iterator_tag : forward_iterator_tag {};
+  struct random_access_iterator_tag
+      : bidirectional_iterator_tag {};
+}
+    \end{cpp}
+    \pause
+    Every STL iterator has a type alias member \ttt{iterator\_category}, which is one of the five tags.
+    \begin{itemize}
+        \item e.g. \ttt{vector<int>::iterator::iterator\_category} is \ttt{std::random\_access\_iterator\_tag}.
+        \item What are they used for?
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Container Adapters}
+    \ttt{stack}, \ttt{queue} and \ttt{priority\_queue} are `container adapters'.
+    \begin{itemize}
+        \item They are NOT containers and have no iterators.
+        \item They use a container to store data, and re-define the interfaces to resemble the corresponding data structures.
+    \end{itemize}
+    \begin{cpp}
+    void bfs() {
+      std::queue<int> q;
+      q.push(s); vis[s] = true;
+      while (!q.empty()) {
+        int x = q.front(); q.pop();
+        for (auto i = head[x]; i; i = next[i])
+          if (!vis[v[i]]) {
+            q.push(v[i]);
+            vis[v[i]] = true;
+          }
+      }
+    }
+    \end{cpp}
+\end{frame}
+
+\begin{frame}{\ttt{vector<bool>}}
+    It's not necessarily \textit{bad}, but you should be very careful when using it.\\
+    Possible substitutions:
+    \begin{itemize}
+        \item \ttt{std::deque<bool>}
+        \item \ttt{std::bitset}
+        \item \ttt{boost::dynamic\_bitset}
+    \end{itemize}
+\end{frame}
