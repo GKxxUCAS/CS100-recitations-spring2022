@@ -1,0 +1,250 @@
+\section{Operator Overloading}
+
+\subsection{Function-Call Operator}
+
+\begin{frame}[fragile]{Function-Call Operator}
+    \begin{cpp}
+inline int adder(int a, int b) {
+  return a + b;
+}
+int x = adder(42, 35);
+    \end{cpp}
+    The expression `\ttt{adder(42, 35)}' consists of one operator and \textbf{three} operands:
+    \begin{itemize}
+        \item \ttt{()} is the \textbf{function-call} operator.
+        \item Three operands are \ttt{adder}, \ttt{42} and \ttt{35}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Function Objects (Functors)}
+    \begin{cpp}
+struct Adder {
+  int operator()(int a, int b) const {
+    return a + b;
+  }
+};
+int x = Adder{}(42, 35);
+int y = Adder()(42, 35); // Equivalent
+    \end{cpp}
+    \textbf{Default-construct} an \ttt{Adder} object first, and then call \ttt{operator()}.
+    \begin{itemize}
+        \item \textbf{Function objects} or \textbf{Functors}: Objects of classes that define the call operator.
+        \item ``Act like functions''.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Functors}
+    \begin{cpp}
+struct Add_k {
+  int k;
+  Add_k(int x) : k(x) {}
+  void operator()(int &x) const {
+    x += k;
+  }
+};
+int x = 42;
+Add_k{5}(x); // x becomes 47.
+std::vector<int> v = some_value();
+std::for_each(v.begin(), v.end(), Add_k{10});
+    \end{cpp}
+\end{frame}
+
+\subsection{Arithmetic and Relational Operators}
+
+\begin{frame}[fragile]{Arithmetic and Relational Operators}
+    \begin{cpp}
+class Rational {
+ public:
+  Rational(int x) : m_num(x), m_denom(1) {}
+  Rational() : Rational(0) {}
+  double to_double() const {
+    return (double)m_num / m_denom;
+  }
+  // other members
+};
+inline bool operator==
+    (const Rational &lhs, const Rational &rhs) {
+  return std::fabs(lhs.to_double()-rhs.to_double) < 1e-9;
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Arithmetic and Relational Operators}
+    \begin{cpp}
+inline bool operator!=
+    (const Rational &lhs, const Rational &rhs) {
+  return !(lhs == rhs); // Let operator== do the work.
+}
+    \end{cpp}
+    \pause
+    Do we define them as members or non-members?
+    \pause
+    \begin{cpp}
+Rational r = some_value();
+if (r == 0)
+  // do something.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Member or Non-member?}
+    \begin{cpp}
+class Rational {
+ public:
+  bool operator==(const Rational &rhs) const {
+    // ...
+  }
+  // other members
+};
+Rational r = some_value();
+if (0 == r) // ERROR!
+  // do something.
+    \end{cpp}
+    \pause
+    \textit{Effective C++} Item 24: Declare non-member functions when type conversions should apply to all parameters.
+\end{frame}
+
+\subsection{Increment and Decrement Operators}
+
+\begin{frame}[fragile]{Prefix and Postfix}
+    Increment/decrement operators are preferred to be members, though not required by the standard.
+    \begin{columns}
+        \begin{column}{0.5\linewidth}
+            \begin{cpp}
+class Rational {
+ public:
+  Rational &operator++() {
+    m_num += m_denom;
+    return *this;
+  }
+  Rational operator++(int) {
+    auto tmp = *this;
+    ++*this;
+    return tmp;
+  }
+};
+            \end{cpp}
+        \end{column}
+        \begin{column}{0.5\linewidth}
+            \begin{itemize}
+                \item Prefix \bluett{operator++} returns reference to \ttt{*}\bluett{this},
+                \item while postfix \bluett{operator++} returns copy of the object before incrementation.
+                \item Postfix \bluett{operator++} has an extra parameter of type \bluett{int}, which is just a tag.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\subsection{Dereference and Arrow Operators}
+
+\begin{frame}[fragile]{Dereference and Arrow Operators}
+    \begin{cpp}
+template <typename T, bool is_const>
+class Slist_iterator {
+ public:
+  reference operator*() const {
+    // return reference to the data
+    // denoted by this iterator
+  }
+  pointer operator->() const {
+    return std::addressof(operator*());
+  }
+};
+    \end{cpp}
+    \begin{itemize}
+        \item To make \ttt{(*p).mem} equivalent to \ttt{p->mem}, \ttt{operator->} is always defined as this.
+        \item Why do we use \ttt{std::addressof}? (\ttt{<memory>})
+    \end{itemize}
+\end{frame}
+
+\subsection{Type Conversions}
+
+\begin{frame}[fragile]{Type Conversion Operator}
+    \begin{cpp}
+class Rational {
+ public:
+  operator double() const {
+    return (double)m_num / m_denom;
+  }
+};
+Rational r = some_value();
+double x = r;
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Conversion to \bluett{bool}}
+    Recall that:
+    \begin{cpp}
+std::cin >> x;
+if (std::cin)
+  // input succeeded.
+    \end{cpp}
+    A conversion to \bluett{bool}?
+    \begin{cpp}
+class istream {
+ public:
+  operator bool() const {
+    // ...
+  }
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Surprise!}
+    \begin{cpp}
+class istream {
+ public:
+  operator bool() const {
+    // ...
+  }
+};
+    \end{cpp}
+    With this conversion operator, the following code \textbf{compiles} happily!
+    \begin{cpp}
+int i;
+std::cin << i; // ???
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{\bluett{explicit} Conversion}
+    \begin{cpp}
+class istream {
+ public:
+  explicit operator bool() const {
+    // ...
+  }
+};
+    \end{cpp}
+    Only allow explicit conversion to happen through this function.
+    \begin{itemize}
+        \item Using an expression as the operand of \bluett{operator\&\&}, \bluett{operator||} or \bluett{operator!},
+        \item or in the condition part of \bluett{operator?:},
+        \item or placing it in the condition part of \bluett{if, for, while, do-while} statements, \textbf{are also seen as explicit conversion to \bluett{bool}}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Be Careful with Ambiguity}
+    \begin{cpp}
+struct B;
+struct A {
+  A(const B &);
+};
+struct B {
+  operator A() const;
+};
+B b;
+A a(b); // ERROR! Which conversion?
+    \end{cpp}
+    \begin{itemize}
+        \item Never define both a constructor \ttt{A::A(const B \&)} and a conversion \ttt{B::operator A() const}.
+        \item Be careful with conversion to built-in types.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Call Overloaded Operator Functions Directly}
+    \begin{itemize}
+        \item \ttt{a + b} may be equivalent to \ttt{operator+(a, b)} or \ttt{a.operator+(b)}.
+        \item \ttt{++a} is equivalent to \ttt{a.operator++()},
+        \item while \ttt{a++} should be \ttt{a.operator++(0)}. (Pass any integer you like.)
+    \end{itemize}
+    Remember to differentiate between members and non-members.
+\end{frame}
