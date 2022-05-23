@@ -64,7 +64,8 @@ class Rational {
 };
 inline bool operator==
     (const Rational &lhs, const Rational &rhs) {
-  return std::fabs(lhs.to_double()-rhs.to_double) < 1e-9;
+  return
+    std::fabs(lhs.to_double()-rhs.to_double()) < 1e-9;
 }
     \end{cpp}
 \end{frame}

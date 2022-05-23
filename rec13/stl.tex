@@ -52,7 +52,7 @@ while (std::cin >> x) {
     \begin{cpp}
 while (std::cin >> x) {
   auto found = std::find(v.begin(), v.end(), x);
-  if (found != v.end())
+  if (found == v.end())
     v.push_back(x);
 }
     \end{cpp}
@@ -75,7 +75,7 @@ scores[3] = 90;
     Map student names to scores?
     \pause
     \begin{cpp}
-std::map<std::string>> scores;
+std::map<std::string, int> scores;
 scores["Alice"] = 90;
     \end{cpp}
 \end{frame}
@@ -90,7 +90,7 @@ std::copy(v.begin(), v.end(), v2.begin());
     \textbf{But this requires \ttt{v2} to have enough room.}
     \pause
     \begin{cpp}
-v2.resize();
+v2.resize(v.size());
 std::copy(v.begin(), v.end(), v2.begin());
     \end{cpp}
     \pause
