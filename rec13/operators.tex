@@ -104,6 +104,43 @@ if (0 == r) // ERROR!
     \textit{Effective C++} Item 24: Declare non-member functions when type conversions should apply to all parameters.
 \end{frame}
 
+\begin{frame}[fragile]{Compound Assignment Operators}
+    \begin{cpp}
+class Rational {
+ public:
+  Rational &operator+=(const Rational &);
+  Rational &operator-=(const Rational &);
+  friend Rational operator-(const Rational &);
+};
+inline Rational operator-(const Rational &r) {
+  return Rational(-r.m_num, r.m_denom);
+}
+inline Rational &Rational::operator+=
+    (const Rational &other) {
+  // add other to *this
+  return *this;
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Compound Assignment Operators}
+    Define other operators in terms of \bluett{operator+=} and \bluett{operator-} (negation).
+    \begin{cpp}
+inline Rational &Rational::operator-=
+    (const Rational &other) {
+  return *this += -other;
+}
+inline Rational operator+
+    (const Rational &lhs, const Rational &rhs) {
+  return Rational(lhs) += rhs;
+}
+inline Rational operator-
+    (const Rational &lhs, const Rational &rhs) {
+  return Rational(lhs) -= rhs;
+}
+    \end{cpp}
+\end{frame}
+
 \subsection{Increment and Decrement Operators}
 
 \begin{frame}[fragile]{Prefix and Postfix}
