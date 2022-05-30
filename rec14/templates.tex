@@ -1,0 +1,452 @@
+\section{Templates}
+
+\subsection{Function Templates}
+
+\begin{frame}[fragile]{Define a Function Template}
+    \begin{cpp}
+int compare(int a, int b) {
+  if (a < b) return -1;
+  if (b < a) return 1;
+  return 0;
+}
+int compare(double a, double b) {
+  if (a < b) return -1;
+  if (b < a) return 1;
+  return 0;
+}
+int compare(const std::string &a, const std::string &b) {
+  if (a < b) return -1;
+  if (b < a) return 1;
+  return 0;
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Define a Function Template}
+    \begin{cpp}
+template <typename T>
+int compare(const T &a, const T &b) {
+  if (a < b) return -1;
+  if (b < a) return 1;
+  return 0;
+}
+    \end{cpp}
+    \begin{itemize}
+        \item Type parameter: \ttt{T}.
+        \item A template is a \textbf{guideline} for the compiler:
+        \begin{itemize}
+            \item When \ttt{compare(42, 53)} is called, \ttt{T} is deduced to be \bluett{int}, and the compiler generates a version of the function for \bluett{int}.
+            \item When \ttt{compare(s1, s2)} is called on \ttt{std::string}s, \ttt{T} is deduced to be \ttt{std::string}.
+            \item \textbf{Instantiation} of a template.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Type Parameter}
+    \begin{cpp}
+template <typename T, class U>
+void fun(const T &, const U &);
+    \end{cpp}
+    \begin{itemize}
+        \item \typename and \class here are \textbf{equivalent}: \ttt{U} doesn't have to be a class type.
+    \end{itemize}
+    \pause
+    \begin{cpp}
+fun(42, 3.14);  // T=int, U=double
+std::string s = "Hello";
+fun(s, 42);     // T=std::string, U=int
+fun<int, int>(42, 3.14); // T=U=int, 3.14 converts to 3
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Requirements on Types}
+    Is this good?
+    \begin{cpp}
+template <typename T>
+int compare(T a, T b) {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
+    \end{cpp}
+    \pause
+    \begin{itemize}
+        \item What if \ttt{T} is uncopyable, or the copying is too costly?
+        \pause
+        \item To make a class fit here, you need to define both \bluett{operator<} and \bluett{operator>}!
+    \end{itemize}
+    Template programs should try to minimize the number of requirements placed on the argument types.
+\end{frame}
+
+\begin{frame}[fragile]{Deduction Fails...}
+    \begin{cpp}
+template <typename T, typename U>
+void fun(const U &x) {}
+fun(42); // Error: What is T?
+    \end{cpp}
+    \pause
+    You need to write it explicitly:
+    \begin{cpp}
+fun<double>(42); // Correct. T=double, U=int.
+    \end{cpp}
+\end{frame}
+
+\subsection{Class Templates}
+
+\begin{frame}[fragile]{Define a Class Template}
+    \begin{itemize}
+        \item HW5-1: \ttt{IntArray} \(\Longrightarrow\) \ttt{Array<T>}.
+        \item Define member functions inside the class, and outside the class.
+        \item Template arguments could be left out inside the class.
+        \begin{columns}
+            \begin{column}{0.5\textwidth}
+                \begin{cpp}
+// inside the class
+Array<T> &operator=
+    (const Array<T> &other) {
+  // ...
+}
+                \end{cpp}
+            \end{column}
+            \begin{column}{0.5\textwidth}
+                \begin{cpp}
+// leave out <T>
+Array &operator=
+    (const Array &other) {
+  // ...
+}
+                \end{cpp}
+            \end{column}
+        \end{columns}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Class Templates}
+    Template is a guideline for the compiler:
+    \begin{itemize}
+        \item When we use \ttt{Array<double>}, \ttt{T} becomes \bluett{double} and the compiler generates the code for \ttt{class Array<double>}.
+        \item Classes instantiated from the same class template with different template arguments \textbf{have nothing to do with each other}. They are independnet classes.
+        \begin{cpp}
+template <typename T>
+class Array {
+  void fun(Array<double> &ad) {
+    // Error whenever T is not double!
+    auto x = ad.m_size; // m_size is private
+  }
+};
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Templated Member Functions}
+    \begin{cpp}
+template <typename T>
+class Array {
+ public:
+  Array(std::size_t n) : m_size(n), m_data(new T[n]{}) {}
+  template <typename Iterator>
+  Array(Iterator begin, Iterator end)
+      : Array(std::distance(begin, end)) {
+    std::copy(begin, end, m_data);
+  }
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Templated Member Functions}
+    Define it outside the class:
+    \begin{cpp}
+template <typename T>
+template <typename Iterator>
+Array<T>::Array(Iterator begin, Iterator end)
+    : Array(std::distance(begin, end)) {
+  std::copy(begin, end, m_data);
+}
+    \end{cpp}
+    \begin{itemize}
+        \item It should \textbf{NOT} be declared as
+        \begin{cpp}
+template <typename T, typename Iterator>
+        \end{cpp}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Templated Member Functions of Non-template Classes}
+    \begin{cpp}
+class Widget {
+ public:
+  template <typename Container>
+  void add_this_to(Container &c) const {
+    c.emplace_back(this);
+  }
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Templated Member Functions of Non-template Classes}
+    Define it outside the class:
+    \begin{cpp}
+class Widget {
+ public:
+  template <typename Container>
+  void add_this_to(Container &) const;
+};
+template <typename Container>
+void Widget::add_this_to(Container &c) const {
+  c.emplace_back(this);
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Instantiation}
+    \begin{itemize}
+        \item For a class template, only when the class is used will the code for the class be generated.
+        \item For a function template, only when the function is called will the code for the function be generated.
+        \pause
+        \item For a class template, a member function is compiled only when the function is called.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Instantiation}
+    \begin{cpp}
+template <typename T>
+class Array {
+ public:
+  void add_five() {
+    for (std::size_t i = 0; i != m_size; ++i)
+      m_data[i] += 5;
+  }
+};
+Array<int> ai(10);
+ai.add_five();              // OK
+Array<std::string> as(10);
+// Still OK. add_five is not compiled here.
+    \end{cpp}
+    \pause
+    \begin{cpp}
+as.add_five(); // Error.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Templated Type Aliases}
+    \begin{cpp}
+template <typename T>
+using pvec = std::shared_ptr<std::vector<T>>;
+
+pvec<int> pvi; // pvi is a shared_ptr<vector<int>>
+pvec<double> pvd; // pvd is a shared_ptr<vector<double>>
+    \end{cpp}
+    This is what \bluett{typedef} unable to do.
+\end{frame}
+
+\subsection{Template Specialization}
+
+\begin{frame}[fragile]{Example}
+    \begin{cpp}
+template <typename T>
+int compare(const T &a, const T &b) {
+  if (a < b) return -1;
+  if (b < a) return 1;
+  return 0;
+}
+    \end{cpp}
+    \pause
+    \begin{cpp}
+const char *cs1 = "hello", *cs2 = "world";
+auto result = compare(cs1, cs2); // Oops!
+    \end{cpp}
+    \begin{itemize}
+        \item \ttt{T} becomes \bluett{const char }\ttt{*}.
+        \item Comparing two pointers instead of two strings!
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Specialization of Function Templates}
+    \begin{cpp}
+template <typename T>
+int compare(const T &a, const T &b) {
+  if (a < b) return -1;
+  if (b < a) return 1;
+  return 0;
+}
+template <>
+int compare(const char *const &p1,
+            const char *const &p2) {
+  return std::strcmp(p1, p2);
+}
+    \end{cpp}
+    \begin{itemize}
+        \item Parameter types should match the corresponding types in the previously declared template.
+        \begin{itemize}
+            \item This is a specialization for \ttt{T = }\bluett{const char }\ttt{*}.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Specialization and Function Matching}
+    \begin{itemize}
+        \item Non-template \(>\) Template-specialization \(>\) Template.
+    \end{itemize}
+    \begin{cpp}
+template <>
+int compare(const char *const &p1,
+            const char *const &p2) {
+  std::cout << "template specialization" << std::endl;
+  return std::strcmp(p1, p2);
+}
+int compare(const char *const &p1,
+            const char *const &p2) {
+  std::cout << "non-template" << std::endl;
+  return std::strcmp(p1, p2);
+}
+const char *cs1 = "hello", *cs2 = "world";
+auto result = compare(cs1, cs2); // "non-template"
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Specialization of Class Templates}
+    If we want to make a specialized version for \ttt{Array<bool>}, just like \ttt{std::vector}...
+    \begin{cpp}
+template <typename T>
+class Array { /* ... */ };
+
+template <>
+class Array<bool> {
+  // Show your talented design for bools here.
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Partial Specialization}
+    Recall that \ttt{std::vector} has another template parameter: \blue{the allocator}.
+    \begin{cpp}
+template <typename T, typename Alloc>
+class vector { /* ... */ };
+
+template <typename Alloc>
+class vector<bool, Alloc> { /* ... */ };
+    \end{cpp}
+    \pause
+    \begin{itemize}
+        \item \ttt{vector<bool, Alloc>} is a specialization for \ttt{T=bool}, but it is still a template.
+        \begin{itemize}
+            \item \ttt{Alloc} is the remaining template parameter.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Partial Specialization}
+    \ttt{std::unique\_ptr} has a partial specialization for arrays:
+    \begin{cpp}
+template <typename T>
+class unique_ptr { /* ... */ };
+
+template <typename T>
+class unique_ptr<T[]> { /* ... */ };
+    \end{cpp}
+    \begin{itemize}
+        \item \ttt{std::unique\_ptr<T[]>} does not provide \bluett{operator->}, but it provides \bluett{operator[]}.
+        \item Used for managing dynamic arrays of unique ownership.
+        \pause
+        \item \textbf{Use STL containers} instead of \ttt{std::unique\_ptr<T[]>}, unless for special purposes!
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Partial Specialization}
+    Partial specialization is \textbf{NOT allowed} for function templates:
+    \begin{cpp}
+template <typename T>
+void swap(T &a, T &b) {
+  T tmp(a);
+  a = b;
+  b = tmp;
+}
+template <typename T>
+void swap<Array<T>>(Array<T> &a, Array<T> &b) { // Error!
+  a.swap(b);
+}
+    \end{cpp}
+\end{frame}
+
+\subsection{Non-type Template Parameters}
+
+\begin{frame}[fragile]{Integer Parameters}
+    A new way of passing arrays:
+    \begin{cpp}
+template <unsigned N>
+void print_array(const int (&arr)[N]) {
+  for (unsigned i = 0; i != N; ++i)
+    std::cout << arr[i] << " ";
+}
+    \end{cpp}
+    \pause
+    You may also use range-for:
+    \begin{cpp}
+template <unsigned N>
+void print_array(const int (&arr)[N]) {
+  for (auto x : arr)
+    std::cout << x << " ";
+}
+    \end{cpp}
+    \ttt{arr} is recognized as a \textbf{reference to array} here.
+\end{frame}
+
+\begin{frame}[fragile]{Integer Parameters}
+    Recall the old way:
+    \begin{cpp}
+void print_array(const int *arr, unsigned N) {
+  for (unsigned i = 0; i != N; ++i)
+    std::cout << arr[i] << " ";
+}
+    \end{cpp}
+    \ttt{arr} is simply recognized as a pointer here.
+\end{frame}
+
+\begin{frame}[fragile]{Integer Parameters}
+    Generalization for value type:
+    \begin{cpp}
+template <typename T, unsigned N>
+void print_array(const T (&arr)[N]) {
+  for (const auto &x : arr)
+    std::cout << x << " ";
+}
+    \end{cpp}
+    \begin{itemize}
+        \item Be careful with unknown types! (use \bluett{const auto }\ttt{\&} to avoid copying)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Integer Parameters}
+    \begin{cpp}
+template <typename T, bool is_const>
+class Slist_iterator {
+  // When is_const is true, it is a const_iterator.
+  // Otherwise, it is an iterator.
+};
+
+template <typename T>
+class Slist {
+ public:
+  using iterator = Slist_iterator<T, false>;
+  using const_iterator = Slist_iterator<T, true>;
+  // ...
+};
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Constant Expression}
+    \begin{itemize}
+        \item Anything used as a template argument must be \textbf{known at compile-time}. \red{(Why?)}
+        \pause
+    \end{itemize}
+    \begin{cpp}
+int n;
+std::cin >> n;
+std::array<int, n> arr; // Error! n is runtime-determined.
+    \end{cpp}
+    \pause
+    \begin{cpp}
+int maxn = 1000;
+std::array<int, maxn> arr; // Error! maxn is not a constant expression
+    \end{cpp}
+\end{frame}

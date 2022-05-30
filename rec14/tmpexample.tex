@@ -1,0 +1,16 @@
+\section{An Interesting Example}
+
+\begin{frame}[fragile]{An Interesting Example}
+    \begin{cpp}
+template <unsigned long N>
+struct binary {
+  static constexpr unsigned long value
+      = (binary<N / 10>::value << 1) + (N & 1);
+};
+
+template <>
+struct binary<0ul> {
+  static constexpr unsigned long value = 0;
+};
+    \end{cpp}
+\end{frame}

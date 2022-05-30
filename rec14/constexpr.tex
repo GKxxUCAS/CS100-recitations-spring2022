@@ -1,0 +1,86 @@
+\section{Constant Expressions}
+
+\subsection{\ttt{constexpr} Variables}
+
+\begin{frame}[fragile]{Constant Expression}
+    \begin{cpp}
+// const variable initialized with constant expression is constant expression.
+const int maxn = 1000;
+std::array<int, maxn> arr; // OK.
+    \end{cpp}
+    \pause
+    The \constexpr keyword:
+    \begin{cpp}
+constexpr int maxn = 1000; // Undoubtedly constant expression.
+std::array<int, maxn> arr;
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Constant Expression}
+    \begin{itemize}
+        \item \constexpr explicitly declares that a variable must have a compile-time known value.
+        \item \constexpr tells the compiler: You can work out its value!
+        \pause
+        \item But if the compiler cannot, it reports an error.
+    \end{itemize}
+    \begin{cpp}
+int n; std::cin >> n;
+constexpr int m = n; // Error.
+    \end{cpp}
+\end{frame}
+
+\subsection{\ttt{constexpr} Functions}
+
+\begin{frame}[fragile]{\ttt{constexpr} Functions}
+    Since C++11, functions can be defined as \bluett{constexpr}, but with some constraints.
+    \begin{cpp}
+constexpr int add(int a, int b) {
+  return a + b; // OK.
+}
+int x = add(42, 35); // run the function at compile-time!
+int a, b; std::cin >> a >> b;
+int y = add(a, b); // run the function at runtime.
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{constexpr} Functions}
+    Parameter types and return-type of \constexpr functions must be a literal type.
+    \begin{cpp}
+constexpr std::string cat(const std::string &a, // Error!
+                          const std::string &b) {
+  return a + b;
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{constexpr} Functions}
+    C++11 \constexpr functions must contain only a \bluett{return} statement, but C++14 allows more control-flow statements.
+    \begin{cpp}
+// Allowed since C++14
+constexpr int power(int x, int n) {
+  int result = 1;
+  while (n--)
+    result *= x;
+  return result;
+}
+// The version for C++11
+constexpr int power(int x, int n) {
+  return n == 0 ? 1 : power(x, n - 1);
+}
+    \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{More at Compile-time...}
+    C++ has been trying to do more work at compile-time...
+    \begin{itemize}
+        \item Constructors may be \constexpr.
+        \item STL containers like \ttt{std::vector}, \ttt{std::string} have \constexpr constructors and member functions since C++20.
+        \pause
+        \item Non-type template parameters must be integral type (integers, \bluett{bool}, \bluett{char}) before C++20...
+        \begin{itemize}
+            \item Floating-point types or class types are not allowed.
+        \end{itemize}
+        \pause
+        \item Since C++20, anything can be used as template parameters.
+    \end{itemize}
+\end{frame}
