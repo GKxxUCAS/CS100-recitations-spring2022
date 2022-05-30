@@ -65,7 +65,7 @@ constexpr int power(int x, int n) {
 }
 // The version for C++11
 constexpr int power(int x, int n) {
-  return n == 0 ? 1 : power(x, n - 1);
+  return n == 0 ? 1 : x * power(x, n - 1);
 }
     \end{cpp}
 \end{frame}
