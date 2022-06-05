@@ -1,0 +1,34 @@
+\documentclass{beamer}
+
+\usepackage{../cppenv, ../recdefs}
+
+\usepackage{url}
+
+\usetheme{Darmstadt}
+\usecolortheme{wolverine}
+
+\title{CS100 Recitation 15}
+\author{GKxx}
+\date{June 6, 2022}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}{Contents}
+    \tableofcontents
+\end{frame}
+
+\AtBeginSubsection{
+    \begin{frame}{Contents}
+        \tableofcontents[currentsection, currentsubsection]
+    \end{frame}
+}
+
+\include{template}
+
+\include{summary}
+
+\end{document}
