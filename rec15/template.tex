@@ -210,6 +210,25 @@ template <typename Iterator>
 \end{frame}
 
 \begin{frame}[fragile]{\ttt{std::distance}}
+    Is this correct?
+    \begin{cpp}
+template <typename Iterator>
+inline auto distance(Iterator begin, Iterator end)
+    -> typename Iterator::difference_type {
+  using category = typename Iterator::iterator_category;
+  if (std::is_same<category,
+                std::random_access_iterator_tag>::value)
+    return end - begin;
+  else {
+    // ...
+  }
+}
+    \end{cpp}
+    \pause
+    It \textbf{doesn't work}! Even when \ttt{Iterator} is an \blue{input-iterator}, the expression `\ttt{end - begin}' is still compiled and causes an error!
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{std::distance}}
     \begin{cpp}
 template <typename Iterator>
 auto distance_impl(Iterator begin, Iterator end,
@@ -239,6 +258,7 @@ inline auto distance(Iterator begin, Iterator end) {
         \item but they do not have a `\ttt{iterator\_category}' member!
     \end{itemize}
     \pause
+    Define a helper class.
     \begin{cpp}
 template <typename Iterator>
 struct Category {
@@ -340,6 +360,16 @@ static_assert(get_x_is_const, "Why don't you define get_x as a const member func
 \end{frame}
 
 \begin{frame}[fragile]{\ttt{std::enable\_if}}
+    \begin{cpp}
+// enable_if<...>::type does not exist when condition is false
+template <bool Condition, typename T>
+struct enable_if {};
+template <typename T>
+struct enable_if<true, T> {
+  using type = T;
+};
+    \end{cpp}
+    \pause
     Enable a function to be called according to a given condition:
     \begin{cpp}
 template <typename T>
