@@ -1,0 +1,15 @@
+template <typename T>
+class Array {
+ public:
+  const T &at(std::size_t n) const {
+    if (n >= m_size)
+      throw std::out_of_range("Array subscript out of range.");
+    return m_data[n];
+  }
+  T &at(std::size_t n) {
+    return const_cast<T &>(
+      static_cast<const Array<T> *>(this)->at(n);
+    ) // see Effective C++ Item 3
+  }
+  // ...
+};
