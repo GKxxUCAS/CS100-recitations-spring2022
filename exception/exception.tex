@@ -168,7 +168,7 @@ std::vector<int> v;
 v.at(0) = 42; // Throws std::out_of_range.
 v[0] = 42; // Does not throw, but probably causes a segmentation fault.
     \end{cpp}
-    We will see that exceptions \bluett{throw}n could be \bluett{catch}ed and handled.
+    We will see that exceptions \bluett{throw}n could be \bluett{catch}-ed and handled.
 \end{frame}
 
 \begin{frame}[fragile]{Standard Exceptions}
@@ -266,12 +266,13 @@ int main() {
   try {
     int size = 100;
     func(size):
-  } catch (std::bad_alloc &e) {
+  } catch (const std::bad_alloc &e) {
     // deal with shortage of memory here.
   }
   // ...
 }
     \end{cpp}
+    \textit{More Effective C++} Item 13: Catch exceptions by reference.
 \end{frame}
 
 \begin{frame}[fragile]{\ttt{what}}
