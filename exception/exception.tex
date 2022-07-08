@@ -184,8 +184,8 @@ class Array {
   }
   T &at(std::size_t n) {
     return const_cast<T &>(
-      static_cast<const Array<T> *>(this)->at(n);
-    ) // see Effective C++ Item 3
+      static_cast<const Array<T> *>(this)->at(n)
+    ); // see Effective C++ Item 3
   }
   // ...
 };
@@ -265,7 +265,7 @@ void func(int n) {
 int main() {
   try {
     int size = 100;
-    func(size):
+    func(size);
   } catch (const std::bad_alloc &e) {
     // deal with shortage of memory here.
   }
