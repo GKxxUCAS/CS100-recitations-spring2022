@@ -13,8 +13,11 @@
     stringstyle = \ttfamily\color[RGB]{128, 0, 0},
     showstringspaces = false,
     language = {[11]C++},
+    escapechar = \@
 }
 
-\lstnewenvironment{cpp}{\lstset{language = {[11]C++}}}{}
+\lstnewenvironment{cpp}[1][\small]{\lstset{language = {[11]C++}, basicstyle = #1\ttfamily}}{}
 
 \lstnewenvironment{txt}{\lstset{language = {[plain]TeX}}}{}
+
+\newcommand{\ilcpp}[1]{\colorbox[rgb]{0.9, 0.9, 0.9}{\lstinline[language = {[11]C++}]$#1$}}
