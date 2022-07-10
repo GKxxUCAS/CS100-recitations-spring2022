@@ -223,7 +223,7 @@ int main() {
 \begin{frame}[fragile]{Stack Unwinding}
   \begin{columns}
     \begin{column}{0.4\linewidth}
-      \begin{lstlisting}[language = {[11]C++}, escapechar = \@]
+      \begin{cpp}
 @\onslide<4>{\Highlight}@void func(int n) {
 @\onslide<3>{\Highlight}@  int x = 42;
 @\onslide<1,2>{\Highlight}\onslide<1>{\danger}@int *p = new int[n];
@@ -234,7 +234,7 @@ int main() {
 @\onslide<5>{\Highlight}@  func(size);
   // ...
 }
-      \end{lstlisting}
+      \end{cpp}
     \end{column}
     \begin{column}{0.6\linewidth}
       \begin{enumerate}
@@ -320,7 +320,7 @@ void f(const std::vector<int> &v) {
 
 \begin{frame}[fragile]{Catch an Exception}
   Suppose \ttt{std::out\_of\_range} is raised.
-  \begin{lstlisting}[language = {[11]C++}, escapechar = \@]
+  \begin{cpp}
 void f(const std::vector<int> &v) {
   try {
 @\onslide<3>{\Highlight}@    int i = 42;@\onslide<3>{\quad\quad\quad\quad\commenter{`i' is destroyed}}@
@@ -337,7 +337,7 @@ void f(const std::vector<int> &v) {
   }
 @\onslide<7>{\Highlight}@  std::cout << "returns\n";@\onslide<7>{\quad\commenter{Control flow continues here}}@
 }
-  \end{lstlisting}
+  \end{cpp}
 \end{frame}
 
 \begin{frame}[fragile]{Catch by Base Class}
@@ -395,7 +395,7 @@ try {
 \end{frame}
 
 \begin{frame}[fragile]{Stack Unwinding}
-  \begin{lstlisting}[language = {[11]C++}, escapechar = \@]
+  \begin{cpp}
 void fun() {
 @\onslide<3>{\Highlight}@  int i = 42;@\onslide<3>{\quad\quad\commenter{`i' is destroyed}}@
 @\onslide<2>{\Highlight}@  std::vector<int> v;@\onslide<2>{\quad\commenter{`v' is destroyed}}@
@@ -407,7 +407,7 @@ int main() {
 @\onslide<4>{\Highlight}@    fun();@\onslide<4>{\quad\quad\commenter{Control flow returns here}}@
 @\onslide<6>{\Highlight}@  } catch (...) {}@\onslide<6>{\quad\commenter{The exception is caught.}}@
 }
-  \end{lstlisting}
+  \end{cpp}
 \end{frame}
 
 \begin{frame}[fragile]{Notes}
@@ -653,7 +653,7 @@ class Array {
 \end{frame}
 
 \begin{frame}[fragile]{Which Part may Throw?}
-  \begin{lstlisting}[language = {[11]C++}, escapechar = \@]
+  \begin{cpp}
 // For simplicity, assume T is default-constructible and copy-assignable.
 @\redtt{template <typename T>}@
 class Array {
@@ -668,7 +668,7 @@ class Array {
               other.m_data + other.m_size, m_data);
   }
 };
-  \end{lstlisting}
+  \end{cpp}
 \end{frame}
 
 \begin{frame}[fragile]{Which Exception-safety Guarantee?}
@@ -689,7 +689,7 @@ class Array {
 \end{frame}
 
 \begin{frame}[fragile]{Make it Exception-safe}
-  \begin{lstlisting}[language = {[11]C++}, escapechar = \@]
+  \begin{cpp}
 template <typename T>
 class Array {
  public:
@@ -705,7 +705,7 @@ class Array {
     }
   }
 };
-  \end{lstlisting}
+  \end{cpp}
 \end{frame}
 
 \begin{frame}[fragile]{Which Exception-safety Guarantee?}
@@ -729,7 +729,7 @@ class Array {
 \end{frame}
 
 \begin{frame}[fragile]{Make it Exception-safe}
-  \begin{lstlisting}[language = {[11]C++}, escapechar = \@]
+  \begin{cpp}
 template <typename T>
 class Array {
  public:
@@ -748,7 +748,7 @@ class Array {
     return *this;
   }
 };
-  \end{lstlisting}
+  \end{cpp}
 \end{frame}
 
 \begin{frame}[fragile]{Which Exception-safety Guarantee?}

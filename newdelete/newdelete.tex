@@ -1,0 +1,389 @@
+\documentclass{beamer}
+
+\usetheme{Berlin}
+\usecolortheme{lily}
+
+\usepackage{../cppenv}
+\usepackage{../recdefs}
+
+\title{Overloaded and Customized \ttt{new}/\ttt{delete}}
+\author{GKxx}
+\date{\today}
+
+\AtBeginSubsection{
+  \begin{frame}{Contents}
+    \tableofcontents[currentsection, currentsubsection]
+  \end{frame}
+}
+
+\begin{document}
+
+\begin{frame}
+	\maketitle
+\end{frame}
+
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+\section{\ttt{new} Expressions and \ttt{operator new}}
+
+\begin{frame}{\ttt{new} Expressions}
+  The execution of a \bluett{new} expression takes two steps:
+  \begin{enumerate}
+    \item Allocate a block of memory.
+    \item Construct the object(s) on the allocated memory.
+  \end{enumerate}
+  What we can control is the first step.
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{operator new}}
+  Memory allocation is done by a group of functions:
+  \begin{cpp}
+// Not inlined, not in any namespace
+void *operator new(std::size_t size);
+void *operator new[](std::size_t size);
+  \end{cpp}
+  \begin{itemize}
+    \item For \ilcpp{new Type(args)}, the memory is allocated by calling \ilcpp{operator new(sizeof(Type))}.
+    \item For \ilcpp{new Type[n]}, the memory is allocated by calling \ilcpp{operator new[](sizeof(Type) * n)}.
+    \item[*]{\footnotesize C++17 alignment-aware \bluett{operator new}? Talk later.}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{operator new}}
+  \begin{cpp}
+void *operator new(std::size_t size);
+void *operator new[](std::size_t size);
+  \end{cpp}
+  \begin{itemize}
+    \item These two functions \textbf{do not know} the type of object(s) to be created.
+    \item \ilcpp{operator new[]} \textbf{does not know} the number of objects to be created.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\ttt{delete} Expressions}
+  The execution of a \bluett{delete} expression takes two steps:
+  \begin{enumerate}
+      \item Destroy the object. {\small(Not executed by C++20 \blue{destroying-delete})}
+    \item Deallocate the memory.
+  \end{enumerate}
+  What we can control is the second step.
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{operator delete}}
+  Memory deallocation is done by a group of functions:
+  \begin{cpp}
+// Not inlined, not in any namespace
+void operator delete(void *ptr) noexcept;
+void operator delete[](void *ptr) noexcept;
+  \end{cpp}
+  \begin{itemize}
+    \item \ilcpp{delete ptr} deallocates the memory by calling \ilcpp{operator delete(ptr)}.
+    \item \ilcpp{delete[] ptr} deallocates the memory by calling \ilcpp{operator delete[](ptr)}.
+  \end{itemize}
+\end{frame}
+
+\section{Overloading \ttt{operator new}}
+
+\subsection{Standard Library Version}
+
+\begin{frame}[fragile]{Standard \ttt{operator new}}
+  The following functions are \textit{replacable}:
+  \begin{cpp}
+void *operator new(std::size_t size);
+void *operator new[](std::size_t size);
+void operator delete(void *ptr) noexcept;
+void operator delete[](void *ptr) noexcept;
+  \end{cpp}
+  \begin{itemize}
+    \item Standard versions (normal versions) are defined in standard library file \ttt{<new>}.
+    \item But the compiler will choose the user-defined version if there exists one.
+    \item In this case, they do not constitute redefinition.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Standard \ttt{operator new}}
+  Difference between \bluett{operator new} and \ttt{malloc}?
+  \pause
+  \par Basic:
+  \begin{itemize}
+    \item \bluett{operator new} allocates some memory when \ilcpp{size == 1}, while the behavior of \ilcpp{malloc(0)} is implementation-defined.
+    \item On failure, \bluett{operator new} throws \ttt{std::bad\_alloc}, while \ttt{malloc} returns null pointer.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Standard \ttt{operator new}}
+  A simple \bluett{operator new} that uses \ttt{malloc} for allocation:
+  \begin{cpp}
+void *operator new(std::size_t size) {
+  if (size == 0)
+    size = 1;
+  if (auto ptr = std::malloc(size))
+    return ptr;
+  throw std::bad_alloc{};
+}
+  \end{cpp}
+  (Similar for \bluett{operator new}\ttt{[]}\dots)
+\end{frame}
+
+\begin{frame}[fragile]{Standard \ttt{operator new}}
+  In fact, \bluett{operator new} keeps trying to allocate memory and, on failure, does some possible adjustment by calling a \textbf{new-handler}, until the allocation succeeds or no new-handler is available.
+  \begin{cpp}
+void *operator new(std::size_t size) {
+  if (size == 0) size = 1;
+  while (true) {
+    if (auto ptr = std::malloc(size))
+      return ptr;
+    auto handler = std::get_new_handler();
+    if (handler)
+      handler();
+    else
+      throw std::bad_alloc{};
+  }
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Standard \ttt{operator delete}}
+  Possible implementation of \bluett{operator delete} that uses \ttt{std::free} to deallocate memory:
+  \begin{cpp}
+void operator delete(void *ptr) noexcept {
+  std::free(ptr);
+}
+  \end{cpp}
+  \begin{itemize}
+    \item Make sure it is safe to \bluett{delete} a null pointer.
+    \item Similar for \bluett{operator delete}\ttt{[]}.
+  \end{itemize}
+\end{frame}
+
+\subsection{Overloading}
+
+\begin{frame}{Why Overload them?}
+  \textit{Effective C++} Item 50 talks about the following most common reasons:
+  \begin{itemize}
+    \item To detect usage errors.
+    \item To improve efficiency.
+    \item To collect usage statistics.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Record Allocations}
+  \begin{cpp}
+void *operator new(std::size_t size) {
+  if (size == 0)
+    size = 1;
+  while (true) {
+    if (auto ptr = std::malloc(size)) {
+      recorder.add_record(ptr);
+      return ptr;
+    }
+    auto handler = std::get_new_handler();
+    if (handler)
+      handler();
+    else
+      throw std::bad_alloc{};
+  }
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Record Allocations}
+  \begin{cpp}
+void operator delete(void *ptr) noexcept {
+  if (!recorder.find(ptr))
+    throw std::invalid_argument
+        {"Invalid pointer passed to operator delete"};
+  recorder.remove_record(ptr);
+  std::free(ptr);
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Class-specific Replacements}
+  \begin{cpp}
+class Widget {
+ public:
+  static void *operator new(std::size_t size);
+  static void *operator new[](std::size_t size);
+  // Does not have to be noexcept.
+  static void operator delete(void *ptr);
+  static void operator delete[](void *ptr);
+};
+  \end{cpp}
+  \begin{itemize}
+    \item When we use \bluett{new}/\bluett{new[]} to create class-type objects, the lookup for \bluett{operator new}/\bluett{operator new}\ttt{[]} begins in the class scope.
+    \item If the \bluett{new}-expression uses the form \ilcpp{::new}, the class-scope lookup is \textbf{bypassed} and the global version \ilcpp{::operator new}/\ilcpp{::operator new[]} will be called.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example: \ttt{Heap\_tracked}}
+  This example is from \textit{More Effective C++} Item 27: Requiring or prohibiting heap-based objects.
+  \begin{itemize}
+    \item \ilcpp{dynamic_cast<const void *>(ptr)} yields the beginning address of the object. (Casting it to \ilcpp{void *}, \ilcpp{volatile void *} or \ilcpp{const volatile void *} also work.)
+    \item Track whether an object is heap-based by inheriting \ttt{Heap\_tracked} in a \textbf{mixin} style.
+  \end{itemize}
+\end{frame}
+
+\section{Placement-\ttt{new}}
+
+\subsection{Standard Library Versions}
+
+\begin{frame}[fragile]{\ttt{new}/\ttt{delete} with Extra Arguments}
+  \begin{cpp}[\scriptsize]
+void *operator new(std::size_t size, const std::nothrow_t &) noexcept;
+void *operator new[](std::size_t size, const std::nothrow_t &) noexcept;
+void *operator new(std::size_t size, void *place) noexcept;
+void *operator new[](std::size_t size, void *place) noexcept;
+
+void operator delete(std::size_t size, const std::nothrow_t &) noexcept;
+void operator delete[](std::size_t size, const std::nothrow_t &) noexcept;
+void operator delete(std::size_t size, void *place) noexcept;
+void operator delete[](std::size_t size, void *place) noexcept;
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Non-throwing \ttt{operator new}}
+  \begin{cpp}
+auto ptr = new (std::nothrow) Type(args);
+auto arr = new (std::nothrow) Type[n];
+  \end{cpp}
+  \begin{itemize}
+    \item \ilcpp{std::nothrow} is a tag of type \ilcpp{std::nothrow\_t} defined in \ttt{<new>}.
+    \begin{cpp}
+namespace std {
+  struct nothrow_t {
+    explicit nothrow_t() = default;
+  };
+  extern const nothrow_t nothrow;
+}
+    \end{cpp}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Non-throwing \ttt{operator new}}
+  \begin{cpp}
+auto ptr = new (std::nothrow) Type(args);
+auto arr = new (std::nothrow) Type[n];
+  \end{cpp}
+  \begin{itemize}
+    \item \ilcpp{new (std::nothrow) Type(args)} calls \ilcpp{operator new(sizeof(Type), std::nothrow)} for memory allocation.
+    \item \ilcpp{new (std::nothrow) Type[n](args)} calls \ilcpp{operator new[](sizeof(Type) * n, std::nothrow)} for memory allocation.
+    \item Returns null pointer on failure. No exception would be thrown.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Non-throwing \ttt{operator new}}
+  Possible implementation:
+  \begin{cpp}
+void *operator new(std::size_t size,
+                   const nothrow_t &) noexcept {
+  void *ptr = nullptr;
+  try {
+    ptr = ::operator new(size);
+  } catch (...) {}
+  return ptr;
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Placement-\ttt{new}}
+  The ``real'' placement-\bluett{new}:
+  \begin{cpp}
+Type *pos1 = somewhere();
+new (pos1) Type(args);
+Type *pos2 = somewhere_else();
+new (pos2) Type[n]{@\textit{a,b,c,...}@};
+  \end{cpp}
+  \begin{itemize}
+    \item No allocation is performed.
+    \item Placement-\bluett{new} is used for construct object(s) on given place.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Placement-\ttt{new}}
+  Possible implementation:
+  \begin{cpp}
+void *operator new(std::size_t, void *place) noexcept {
+  return place;
+}
+void *operator new[](std::size_t, void *place) noexcept {
+  return place;
+}
+  \end{cpp}
+  \begin{notice}
+    These two functions (as well as the corresponding \bluett{operator delete}s) \textbf{cannot} be replaced.
+  \end{notice}
+\end{frame}
+
+\subsection{Customized Version}
+
+\begin{frame}[fragile]{Customized Arguments}
+  \begin{cpp}
+void *operator new(std::size_t size,
+                   long line, const char *file) {
+  auto ptr = ::operator new(size);
+  log_allocation(ptr, size, line, file);
+  return ptr;
+}
+auto ptr = new (__LINE__, __FILE__) Type(args);
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Placement-\ttt{delete}}
+  Recall the two steps for a \bluett{new} expression:
+  \begin{enumerate}
+    \item Allocate enough memory.
+    \item Construct the object(s).
+  \end{enumerate}
+  For a \bluett{new} expression \ilcpp{new (args...) Type(ctor_args...)}, if an exception is thrown during the \textbf{second} step:
+  \begin{itemize}
+    \item The corresponding \bluett{operator delete} is called with \ilcpp{ptr, args...} passed to it, where \ilcpp{ptr} is the beginning location of memory allocated in the first step.
+    \item The \bluett{operator delete} deallocates the memory allocated by \bluett{operator new} to ensure memory-safety and exception-safety.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Placement-\ttt{delete}}
+  Possible implementation for non-throwing \bluett{new}:
+  \begin{cpp}
+void operator delete(void *ptr,
+                     const std::nothrow_t &) noexcept {
+  ::operator delete(ptr);
+}
+  \end{cpp}
+  \pause
+  Possible implementation of placement-\bluett{delete} for our customized placement-\bluett{new}:
+  \begin{cpp}
+void operator delete(void *ptr,
+            long line, const char *file) noexcept {
+  log_failure(ptr, line, file);
+  ::operator delete(ptr);
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Placement-\ttt{delete}}
+  Possible implementation for the real ``placement-\bluett{new}''?
+  \pause
+  \begin{cpp}
+void operator delete(void *, void *) noexcept {}
+void operator delete[](void *, void *) noexcept {}
+  \end{cpp}
+  \pause
+  \begin{notice}
+    If no suitable placement-\bluett{delete} is found, no deallocation function would be called, which possibly results in memory leak.
+  \end{notice}
+\end{frame}
+
+\begin{frame}[fragile]{Placement-\ttt{delete}}
+  Which \ilcpp{operator delete} is called?
+  \begin{cpp}
+auto ptr = new (std::nothrow) Type(args);
+delete ptr;
+  \end{cpp}
+  \pause
+  Answer: \textbf{the normal version with no extra arguments.} A placement-\bluett{delete} is called only when constructors throw an exception.
+\end{frame}
+
+\end{document}
