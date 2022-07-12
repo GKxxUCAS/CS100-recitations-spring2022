@@ -6,6 +6,8 @@
 \usepackage{../cppenv}
 \usepackage{../recdefs}
 
+\usepackage{url}
+
 \title{Overloaded and Customized \ttt{new}/\ttt{delete}}
 \author{GKxx}
 \date{\today}
@@ -46,8 +48,8 @@ void *operator new[](std::size_t size);
   \end{cpp}
   \begin{itemize}
     \item For \ilcpp{new Type(args)}, the memory is allocated by calling \ilcpp{operator new(sizeof(Type))}.
-    \item For \ilcpp{new Type[n]}, the memory is allocated by calling \ilcpp{operator new[](sizeof(Type) * n)}.
-    \item[*]{\footnotesize C++17 alignment-aware \bluett{operator new}? Talk later.}
+    \item For \ilcpp{new Type[n]\{initializers\}}, the memory is allocated by calling \ilcpp{operator new[](sizeof(Type) * n)}.
+    \item[*]{\footnotesize C++17 \blue{alignment-aware allocation}? Talk later.}
   \end{itemize}
 \end{frame}
 
@@ -81,6 +83,18 @@ void operator delete[](void *ptr) noexcept;
   \begin{itemize}
     \item \ilcpp{delete ptr} deallocates the memory by calling \ilcpp{operator delete(ptr)}.
     \item \ilcpp{delete[] ptr} deallocates the memory by calling \ilcpp{operator delete[](ptr)}.
+    \item[*]{\footnotesize C++14 \blue{sized-deallocation}? Talk later.}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{operator delete}}
+  Exceptions are not welcomed!
+  \begin{itemize}
+    \item All deallocation functions are \bluett{noexcept}, unless specified otherwise in the declaration.
+    \item If a deallocation function terminates by throwing an exception, the behavior is \textbf{undefined}, even if it is declared with \bluett{noexcept(false)}.
+    \begin{itemize}
+      \item Such exception is not expected to be caught. Stack is possibly not unwound in this case.
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -129,9 +143,10 @@ void *operator new(std::size_t size) {
 
 \begin{frame}[fragile]{Standard \ttt{operator new}}
   In fact, \bluett{operator new} keeps trying to allocate memory and, on failure, does some possible adjustment by calling a \textbf{new-handler}, until the allocation succeeds or no new-handler is available.
-  \begin{cpp}
+  \begin{cpp}[\scriptsize]
 void *operator new(std::size_t size) {
-  if (size == 0) size = 1;
+  if (size == 0)
+    size = 1;
   while (true) {
     if (auto ptr = std::malloc(size))
       return ptr;
@@ -201,13 +216,11 @@ void operator delete(void *ptr) noexcept {
   \end{cpp}
 \end{frame}
 
-\begin{frame}[fragile]{Class-specific Replacements}
-  \begin{cpp}
-class Widget {
- public:
+\begin{frame}[fragile]{Class-specific Versions}
+  \begin{cpp}[\small]
+struct Widget {
   static void *operator new(std::size_t size);
   static void *operator new[](std::size_t size);
-  // Does not have to be noexcept.
   static void operator delete(void *ptr);
   static void operator delete[](void *ptr);
 };
@@ -215,6 +228,21 @@ class Widget {
   \begin{itemize}
     \item When we use \bluett{new}/\bluett{new[]} to create class-type objects, the lookup for \bluett{operator new}/\bluett{operator new}\ttt{[]} begins in the class scope.
     \item If the \bluett{new}-expression uses the form \ilcpp{::new}, the class-scope lookup is \textbf{bypassed} and the global version \ilcpp{::operator new}/\ilcpp{::operator new[]} will be called.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Class-specific Versions}
+  \begin{cpp}[\small]
+struct Widget {
+  static void *operator new(std::size_t size);
+  static void *operator new[](std::size_t size);
+  static void operator delete(void *ptr);
+  static void operator delete[](void *ptr);
+};
+  \end{cpp}
+  \begin{itemize}
+    \item The keyword \bluett{static} is optional: these functions are always static members.
+    \item Deallocation functions are implicitly \bluett{noexcept}.
   \end{itemize}
 \end{frame}
 
@@ -269,7 +297,7 @@ auto arr = new (std::nothrow) Type[n];
   \end{cpp}
   \begin{itemize}
     \item \ilcpp{new (std::nothrow) Type(args)} calls \ilcpp{operator new(sizeof(Type), std::nothrow)} for memory allocation.
-    \item \ilcpp{new (std::nothrow) Type[n](args)} calls \ilcpp{operator new[](sizeof(Type) * n, std::nothrow)} for memory allocation.
+    \item \ilcpp{new (std::nothrow) Type[n]\{initializers\}} calls \ilcpp{operator new[](sizeof(Type) * n, std::nothrow)} for memory allocation.
     \item Returns null pointer on failure. No exception would be thrown.
   \end{itemize}
 \end{frame}
@@ -317,7 +345,7 @@ void *operator new[](std::size_t, void *place) noexcept {
   \end{notice}
 \end{frame}
 
-\subsection{Customized Version}
+\subsection{Customized Versions}
 
 \begin{frame}[fragile]{Customized Arguments}
   \begin{cpp}
@@ -384,6 +412,173 @@ delete ptr;
   \end{cpp}
   \pause
   Answer: \textbf{the normal version with no extra arguments.} A placement-\bluett{delete} is called only when constructors throw an exception.
+\end{frame}
+
+\section{\ttt{new}/\ttt{delete} in Modern C++}
+
+\subsection{Sized-\ttt{delete}}
+
+\begin{frame}{Sized-\ttt{delete}}
+  For some kinds of deallocation functions, it might be necessary to know the \textbf{size} of the block of memory to be deallocated.\par
+  A deallocation function which receives an extra \ttt{std::size\_t} parameter is a \textbf{sized-deallocation function}.
+  \begin{notice}
+    Sized-deallocation function is a \textbf{usual} deallocation function. It is not a placement version.
+  \end{notice}
+\end{frame}
+
+\begin{frame}[fragile]{Sized-\ttt{delete}}
+  Before C++14, sized-\bluett{delete} could only be class-scoped static member:
+  \begin{cpp}
+struct Widget {
+  int x;
+  static void operator delete(void *p, std::size_t sz) {
+    std::cout << "size == " << sz << '\n';
+    ::operator delete(p);
+  }
+};
+auto ptr = new Widget;
+delete ptr;
+  \end{cpp}
+  Output:
+  \begin{txt}
+size == 4
+  \end{txt}
+\end{frame}
+
+\begin{frame}[fragile]{Sized-\ttt{delete}}
+  Before C++14, sized-\bluett{delete} could only be class-scoped static member:
+  \begin{cpp}
+struct Widget {
+  int x;
+  static void operator delete[](void *p, std::size_t sz) {
+    std::cout << "size == " << sz << '\n';
+    ::operator delete[](p);
+  }
+};
+auto ptr = new Widget[100];
+delete []ptr;
+  \end{cpp}
+  Possible output:
+  \begin{txt}
+size == 408
+  \end{txt}
+\end{frame}
+
+\begin{frame}[fragile]{Sized-\ttt{delete}}
+  If a sized-deallocation function is defined and its corresponding unsized version is not, the sized version is called for a \bluett{delete}-expression to deallocate the memory.
+  \begin{itemize}
+    \item The \ttt{std::size\_t} argument is passed by the compiler automatically.
+  \end{itemize}
+  \pause
+  Since C++14, global sized-deallocation functions are also allowed:
+  \begin{cpp}[\scriptsize]
+void operator delete(void *ptr, std::size_t size) noexcept;
+void operator delete[](void *ptr, std::size_t size) noexcept;
+  \end{cpp}
+\end{frame}
+
+\begin{frame}{Sized-\ttt{delete}}
+  The compiler may choose to call the sized version \textbf{or} the unsized one.
+  \begin{itemize}
+    \item Clang-14 calls the unsized version by default, even when the sized version is provided.
+    \item Calls to one version must be effectively equivalent to the other version, otherwise the program has undefined behavior.
+    \item The standard library implementations of sized-deallocation functions directly call the unsized versions.
+  \end{itemize}
+\end{frame}
+
+\subsection{Alignment-aware \ttt{new}/\ttt{delete}}
+
+\begin{frame}{Alignment of Objects}
+  Every object type has the \textbf{alignment requirement} property, representing the number of bytes between successive addresses at which objects of this type can be allocated.
+  \begin{itemize}
+    \item Alignment requirement of an object is an integer value of type \ttt{std::size\_t}, and is always a power of 2.
+    \item Alignment requirement could be queried with \bluett{alignof} or \ttt{std::alignment\_of}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Alignment of Objects}
+  On 64-bit Ubuntu 20.04:
+  \begin{itemize}
+    \item \ilcpp{alignof(int)}: 4
+    \item \ilcpp{alignof(long)}: 8
+    \item \ilcpp{alignof(char)}: 1
+  \end{itemize}
+  \pause
+  \begin{cpp}
+struct Widget {
+  int x;
+  char y;
+};
+  \end{cpp}
+  \ilcpp{alignof(Widget)} is 4 because \ttt{x} must be placed at 4-byte boundaries.
+\end{frame}
+
+\begin{frame}[fragile]{Alignment of Objects}
+  We may use \ilcpp{alignas} to set a special alignment requirement:
+  \begin{cpp}
+struct alignas(32) Widget {
+  // ...
+};
+  \end{cpp}
+  \pause
+  Some types may have special alignment requirements: Intel intrinsic type \ttt{\_\_m256} is a 256-bit type and is aligned at 32-byte boundaries.
+\end{frame}
+
+\begin{frame}[fragile]{Alignment-aware Allocation}
+  Since C++17, a group of alignment-aware allocation functions are introduced:
+  \begin{cpp}[\scriptsize]
+void *operator new(std::size_t size, std::align_val_t al);
+void *operator new[](std::size_t size, std::align_val_t al);
+void *operator new(std::size_t size,
+      std::align_val_t al, const std::nothrow_t &) noexcept;
+void *operator new[](std::size_t size,
+      std::align_val_t al, const std::nothrow_t &) noexcept;
+  \end{cpp}
+  (Together with their deallocation functions and sized-deallocation functions.)
+  \begin{itemize}
+    \item \ttt{<cstdlib>} also introduces \ttt{std::aligned\_alloc}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Alignment-aware Allocation}
+  \begin{cpp}
+namespace std {
+  enum class align_val_t : size_t {};
+}
+  \end{cpp}
+  \begin{itemize}
+    \item Normal allocation functions allocate objects aligned at \ttt{\_\_STDCPP\_DEFAULT\_NEW\_ALIGNMENT\_\_} (might be 16).
+    \item If \ilcpp{alignof(Type)} exceeds the default \bluett{new} alignment, the \bluett{new}-expression calls the alignment-aware \bluett{operator new} and passes \ilcpp{alignof(Type)} as the second argument. (Similar for array-\bluett{new}.)
+  \end{itemize}
+\end{frame}
+
+\subsection{Destroying-\ttt{delete}}
+
+\begin{frame}[fragile]{Destroying-\ttt{delete}}
+  \begin{cpp}
+namespace std {
+  struct destroying_delete_t {
+    explicit destroying_delete_t() = default;
+  };
+  inline constexpr destroying_delete_t
+      destroying_delete{}; // a tag
+}
+struct T {
+  void operator delete(T *ptr, std::destroying_delete_t);
+  // Together with its sized and alignment-aware versions.
+};
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Destroying-\ttt{delete}}
+  If a destroying-\bluett{delete} is defined:
+  \begin{itemize}
+    \item \bluett{delete}-expressions do not execute the destructor before a call to \bluett{operator delete}.
+    \item The destroying-\bluett{delete} is chosen in preference to the normal \bluett{operator delete}.
+    \item It becomes the responsibility of the destroying-\bluett{delete} to destroy the object correctly.
+  \end{itemize}
+  \pause
+  What for? See \url{https://open-std.org/JTC1/SC22/WG21/docs/papers/2017/p0722r1.html}.
 \end{frame}
 
 \end{document}
