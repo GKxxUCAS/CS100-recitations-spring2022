@@ -306,7 +306,7 @@ auto arr = new (std::nothrow) Type[n];
   Possible implementation:
   \begin{cpp}
 void *operator new(std::size_t size,
-                   const nothrow_t &) noexcept {
+                   const std::nothrow_t &) noexcept {
   void *ptr = nullptr;
   try {
     ptr = ::operator new(size);
