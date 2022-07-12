@@ -31,7 +31,7 @@
 \section{\ttt{new} Expressions and \ttt{operator new}}
 
 \begin{frame}{\ttt{new} Expressions}
-  The execution of a \bluett{new} expression takes two steps:
+  The execution of a \kw{new} expression takes two steps:
   \begin{enumerate}
     \item Allocate a block of memory.
     \item Construct the object(s) on the allocated memory.
@@ -47,8 +47,8 @@ void *operator new(std::size_t size);
 void *operator new[](std::size_t size);
   \end{cpp}
   \begin{itemize}
-    \item For \ilcpp{new Type(args)}, the memory is allocated by calling \ilcpp{operator new(sizeof(Type))}.
-    \item For \ilcpp{new Type[n]\{initializers\}}, the memory is allocated by calling \ilcpp{operator new[](sizeof(Type) * n)}.
+    \item For \boxilcpp{new Type(args)}, the memory is allocated by calling \boxilcpp{operator new(sizeof(Type))}.
+    \item For \boxilcpp{new Type[n]\{initializers\}}, the memory is allocated by calling \boxilcpp{operator new[](sizeof(Type) * n)}.
     \item[*]{\footnotesize C++17 \blue{alignment-aware allocation}? Talk later.}
   \end{itemize}
 \end{frame}
@@ -65,7 +65,7 @@ void *operator new[](std::size_t size);
 \end{frame}
 
 \begin{frame}{\ttt{delete} Expressions}
-  The execution of a \bluett{delete} expression takes two steps:
+  The execution of a \kw{delete} expression takes two steps:
   \begin{enumerate}
       \item Destroy the object. {\small(Not executed by C++20 \blue{destroying-delete})}
     \item Deallocate the memory.
@@ -81,8 +81,8 @@ void operator delete(void *ptr) noexcept;
 void operator delete[](void *ptr) noexcept;
   \end{cpp}
   \begin{itemize}
-    \item \ilcpp{delete ptr} deallocates the memory by calling \ilcpp{operator delete(ptr)}.
-    \item \ilcpp{delete[] ptr} deallocates the memory by calling \ilcpp{operator delete[](ptr)}.
+    \item \boxilcpp{delete ptr} deallocates the memory by calling \boxilcpp{operator delete(ptr)}.
+    \item \boxilcpp{delete[] ptr} deallocates the memory by calling \boxilcpp{operator delete[](ptr)}.
     \item[*]{\footnotesize C++14 \blue{sized-deallocation}? Talk later.}
   \end{itemize}
 \end{frame}
@@ -90,8 +90,8 @@ void operator delete[](void *ptr) noexcept;
 \begin{frame}[fragile]{\ttt{operator delete}}
   Exceptions are not welcomed!
   \begin{itemize}
-    \item All deallocation functions are \bluett{noexcept}, unless specified otherwise in the declaration.
-    \item If a deallocation function terminates by throwing an exception, the behavior is \textbf{undefined}, even if it is declared with \bluett{noexcept(false)}.
+    \item All deallocation functions are \kw{noexcept}, unless specified otherwise in the declaration.
+    \item If a deallocation function terminates by throwing an exception, the behavior is \textbf{undefined}, even if it is declared with \kw{noexcept(false)}.
     \begin{itemize}
       \item Such exception is not expected to be caught. Stack is possibly not unwound in this case.
     \end{itemize}
@@ -118,17 +118,17 @@ void operator delete[](void *ptr) noexcept;
 \end{frame}
 
 \begin{frame}{Standard \ttt{operator new}}
-  Difference between \bluett{operator new} and \ttt{malloc}?
+  Difference between \ilcpp{operator new} and \ttt{malloc}?
   \pause
   \par Basic:
   \begin{itemize}
-    \item \bluett{operator new} allocates some memory when \ilcpp{size == 1}, while the behavior of \ilcpp{malloc(0)} is implementation-defined.
-    \item On failure, \bluett{operator new} throws \ttt{std::bad\_alloc}, while \ttt{malloc} returns null pointer.
+    \item \ilcpp{operator new} allocates some memory when \boxilcpp{size == 1}, while the behavior of \boxilcpp{malloc(0)} is implementation-defined.
+    \item On failure, \ilcpp{operator new} throws \ttt{std::bad\_alloc}, while \ttt{malloc} returns null pointer.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Standard \ttt{operator new}}
-  A simple \bluett{operator new} that uses \ttt{malloc} for allocation:
+  A simple \ilcpp{operator new} that uses \ttt{malloc} for allocation:
   \begin{cpp}
 void *operator new(std::size_t size) {
   if (size == 0)
@@ -138,11 +138,11 @@ void *operator new(std::size_t size) {
   throw std::bad_alloc{};
 }
   \end{cpp}
-  (Similar for \bluett{operator new}\ttt{[]}\dots)
+  (Similar for \ilcpp{operator new[]}\dots)
 \end{frame}
 
 \begin{frame}[fragile]{Standard \ttt{operator new}}
-  In fact, \bluett{operator new} keeps trying to allocate memory and, on failure, does some possible adjustment by calling a \textbf{new-handler}, until the allocation succeeds or no new-handler is available.
+  In fact, \ilcpp{operator new} keeps trying to allocate memory and, on failure, does some possible adjustment by calling a \textbf{new-handler}, until the allocation succeeds or no new-handler is available.
   \begin{cpp}[\scriptsize]
 void *operator new(std::size_t size) {
   if (size == 0)
@@ -161,15 +161,15 @@ void *operator new(std::size_t size) {
 \end{frame}
 
 \begin{frame}[fragile]{Standard \ttt{operator delete}}
-  Possible implementation of \bluett{operator delete} that uses \ttt{std::free} to deallocate memory:
+  Possible implementation of \ilcpp{operator delete} that uses \ttt{std::free} to deallocate memory:
   \begin{cpp}
 void operator delete(void *ptr) noexcept {
   std::free(ptr);
 }
   \end{cpp}
   \begin{itemize}
-    \item Make sure it is safe to \bluett{delete} a null pointer.
-    \item Similar for \bluett{operator delete}\ttt{[]}.
+    \item Make sure it is safe to \kw{delete} a null pointer.
+    \item Similar for \ilcpp{operator delete[]}.
   \end{itemize}
 \end{frame}
 
@@ -226,8 +226,8 @@ struct Widget {
 };
   \end{cpp}
   \begin{itemize}
-    \item When we use \bluett{new}/\bluett{new[]} to create class-type objects, the lookup for \bluett{operator new}/\bluett{operator new}\ttt{[]} begins in the class scope.
-    \item If the \bluett{new}-expression uses the form \ilcpp{::new}, the class-scope lookup is \textbf{bypassed} and the global version \ilcpp{::operator new}/\ilcpp{::operator new[]} will be called.
+    \item When we use \kw{new}/\kw{new[]} to create class-type objects, the lookup for \ilcpp{operator new}/\ilcpp{operator new[]} begins in the class scope.
+    \item If the \kw{new}-expression uses the form \boxilcpp{::new}, the class-scope lookup is \textbf{bypassed} and the global version \boxilcpp{::operator new}/\boxilcpp{::operator new[]} will be called.
   \end{itemize}
 \end{frame}
 
@@ -241,15 +241,15 @@ struct Widget {
 };
   \end{cpp}
   \begin{itemize}
-    \item The keyword \bluett{static} is optional: these functions are always static members.
-    \item Deallocation functions are implicitly \bluett{noexcept}.
+    \item The keyword \kw{static} is optional: these functions are always static members.
+    \item Deallocation functions are implicitly \kw{noexcept}.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Example: \ttt{Heap\_tracked}}
   This example is from \textit{More Effective C++} Item 27: Requiring or prohibiting heap-based objects.
   \begin{itemize}
-    \item \ilcpp{dynamic_cast<const void *>(ptr)} yields the beginning address of the object. (Casting it to \ilcpp{void *}, \ilcpp{volatile void *} or \ilcpp{const volatile void *} also work.)
+    \item \boxilcpp{dynamic_cast<const void *>(ptr)} yields the beginning address of the object. (Casting it to \boxilcpp{void *}, \boxilcpp{volatile void *} or \boxilcpp{const volatile void *} also work.)
     \item Track whether an object is heap-based by inheriting \ttt{Heap\_tracked} in a \textbf{mixin} style.
   \end{itemize}
 \end{frame}
@@ -296,8 +296,8 @@ auto ptr = new (std::nothrow) Type(args);
 auto arr = new (std::nothrow) Type[n];
   \end{cpp}
   \begin{itemize}
-    \item \ilcpp{new (std::nothrow) Type(args)} calls \ilcpp{operator new(sizeof(Type), std::nothrow)} for memory allocation.
-    \item \ilcpp{new (std::nothrow) Type[n]\{initializers\}} calls \ilcpp{operator new[](sizeof(Type) * n, std::nothrow)} for memory allocation.
+    \item \boxilcpp{new (std::nothrow) Type(args)} calls \boxilcpp{operator new(sizeof(Type), std::nothrow)} for memory allocation.
+    \item \boxilcpp{new (std::nothrow) Type[n]\{initializers\}} calls \boxilcpp{operator new[](sizeof(Type) * n, std::nothrow)} for memory allocation.
     \item Returns null pointer on failure. No exception would be thrown.
   \end{itemize}
 \end{frame}
@@ -317,7 +317,7 @@ void *operator new(std::size_t size,
 \end{frame}
 
 \begin{frame}[fragile]{Placement-\ttt{new}}
-  The ``real'' placement-\bluett{new}:
+  The ``real'' placement-\kw{new}:
   \begin{cpp}
 Type *pos1 = somewhere();
 new (pos1) Type(args);
@@ -326,7 +326,7 @@ new (pos2) Type[n]{@\textit{a,b,c,...}@};
   \end{cpp}
   \begin{itemize}
     \item No allocation is performed.
-    \item Placement-\bluett{new} is used for construct object(s) on given place.
+    \item Placement-\kw{new} is used for construct object(s) on given place.
   \end{itemize}
 \end{frame}
 
@@ -341,7 +341,7 @@ void *operator new[](std::size_t, void *place) noexcept {
 }
   \end{cpp}
   \begin{notice}
-    These two functions (as well as the corresponding \bluett{operator delete}s) \textbf{cannot} be replaced.
+    These two functions (as well as the corresponding \ilcpp{operator delete}s) \textbf{cannot} be replaced.
   \end{notice}
 \end{frame}
 
@@ -360,20 +360,20 @@ auto ptr = new (__LINE__, __FILE__) Type(args);
 \end{frame}
 
 \begin{frame}[fragile]{Placement-\ttt{delete}}
-  Recall the two steps for a \bluett{new} expression:
+  Recall the two steps for a \kw{new} expression:
   \begin{enumerate}
     \item Allocate enough memory.
     \item Construct the object(s).
   \end{enumerate}
-  For a \bluett{new} expression \ilcpp{new (args...) Type(ctor_args...)}, if an exception is thrown during the \textbf{second} step:
+  For a \kw{new} expression \boxilcpp{new (args...) Type(ctor_args...)}, if an exception is thrown during the \textbf{second} step:
   \begin{itemize}
-    \item The corresponding \bluett{operator delete} is called with \ilcpp{ptr, args...} passed to it, where \ilcpp{ptr} is the beginning location of memory allocated in the first step.
-    \item The \bluett{operator delete} deallocates the memory allocated by \bluett{operator new} to ensure memory-safety and exception-safety.
+    \item The corresponding \ilcpp{operator delete} is called with \boxilcpp{ptr, args...} passed to it, where \boxilcpp{ptr} is the beginning location of memory allocated in the first step.
+    \item The \ilcpp{operator delete} deallocates the memory allocated by \ilcpp{operator new} to ensure memory-safety and exception-safety.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Placement-\ttt{delete}}
-  Possible implementation for non-throwing \bluett{new}:
+  Possible implementation for non-throwing \kw{new}:
   \begin{cpp}
 void operator delete(void *ptr,
                      const std::nothrow_t &) noexcept {
@@ -381,7 +381,7 @@ void operator delete(void *ptr,
 }
   \end{cpp}
   \pause
-  Possible implementation of placement-\bluett{delete} for our customized placement-\bluett{new}:
+  Possible implementation of placement-\kw{delete} for our customized placement-\kw{new}:
   \begin{cpp}
 void operator delete(void *ptr,
             long line, const char *file) noexcept {
@@ -392,7 +392,7 @@ void operator delete(void *ptr,
 \end{frame}
 
 \begin{frame}[fragile]{Placement-\ttt{delete}}
-  Possible implementation for the real ``placement-\bluett{new}''?
+  Possible implementation for the real ``placement-\kw{new}''?
   \pause
   \begin{cpp}
 void operator delete(void *, void *) noexcept {}
@@ -400,7 +400,7 @@ void operator delete[](void *, void *) noexcept {}
   \end{cpp}
   \pause
   \begin{notice}
-    If no suitable placement-\bluett{delete} is found, no deallocation function would be called, which possibly results in memory leak.
+    If no suitable placement-\kw{delete} is found, no deallocation function would be called, which possibly results in memory leak.
   \end{notice}
 \end{frame}
 
@@ -411,7 +411,7 @@ auto ptr = new (std::nothrow) Type(args);
 delete ptr;
   \end{cpp}
   \pause
-  Answer: \textbf{the normal version with no extra arguments.} A placement-\bluett{delete} is called only when constructors throw an exception.
+  Answer: \textbf{the normal version with no extra arguments.} A placement-\kw{delete} is called only when constructors throw an exception.
 \end{frame}
 
 \section{\ttt{new}/\ttt{delete} in Modern C++}
@@ -427,7 +427,7 @@ delete ptr;
 \end{frame}
 
 \begin{frame}[fragile]{Sized-\ttt{delete}}
-  Before C++14, sized-\bluett{delete} could only be class-scoped static member:
+  Before C++14, sized-\kw{delete} could only be class-scoped static member:
   \begin{cpp}
 struct Widget {
   int x;
@@ -446,7 +446,7 @@ size == 4
 \end{frame}
 
 \begin{frame}[fragile]{Sized-\ttt{delete}}
-  Before C++14, sized-\bluett{delete} could only be class-scoped static member:
+  Before C++14, sized-\kw{delete} could only be class-scoped static member:
   \begin{cpp}
 struct Widget {
   int x;
@@ -465,7 +465,7 @@ size == 408
 \end{frame}
 
 \begin{frame}[fragile]{Sized-\ttt{delete}}
-  If a sized-deallocation function is defined and its corresponding unsized version is not, the sized version is called for a \bluett{delete}-expression to deallocate the memory.
+  If a sized-deallocation function is defined and its corresponding unsized version is not, the sized version is called for a \kw{delete}-expression to deallocate the memory.
   \begin{itemize}
     \item The \ttt{std::size\_t} argument is passed by the compiler automatically.
   \end{itemize}
@@ -492,7 +492,7 @@ void operator delete[](void *ptr, std::size_t size) noexcept;
   Every object type has the \textbf{alignment requirement} property, representing the number of bytes between successive addresses at which objects of this type can be allocated.
   \begin{itemize}
     \item Alignment requirement of an object is an integer value of type \ttt{std::size\_t}, and is always a power of 2.
-    \item Alignment requirement could be queried with \bluett{alignof} or \ttt{std::alignment\_of}.
+    \item Alignment requirement could be queried with \kw{alignof} or \ttt{std::alignment\_of}.
   \end{itemize}
 \end{frame}
 
@@ -510,11 +510,11 @@ struct Widget {
   char y;
 };
   \end{cpp}
-  \ilcpp{alignof(Widget)} is 4 because \ttt{x} must be placed at 4-byte boundaries.
+  \boxilcpp{alignof(Widget)} is 4 because \ttt{x} must be placed at 4-byte boundaries.
 \end{frame}
 
 \begin{frame}[fragile]{Alignment of Objects}
-  We may use \ilcpp{alignas} to set a special alignment requirement:
+  We may use \kw{alignas} to set a special alignment requirement:
   \begin{cpp}
 struct alignas(32) Widget {
   // ...
@@ -547,8 +547,8 @@ namespace std {
 }
   \end{cpp}
   \begin{itemize}
-    \item Normal allocation functions allocate objects aligned at \ttt{\_\_STDCPP\_DEFAULT\_NEW\_ALIGNMENT\_\_} (might be 16).
-    \item If \ilcpp{alignof(Type)} exceeds the default \bluett{new} alignment, the \bluett{new}-expression calls the alignment-aware \bluett{operator new} and passes \ilcpp{alignof(Type)} as the second argument. (Similar for array-\bluett{new}.)
+    \item Normal allocation functions allocate objects aligned at \ilcpp{__STDCPP_DEFAULT_NEW_ALIGNMENT__} (might be 16).
+    \item If \boxilcpp{alignof(Type)} exceeds the default \kw{new} alignment, the \kw{new}-expression calls the alignment-aware \ilcpp{operator new} and passes \boxilcpp{alignof(Type)} as the second argument. (Similar for array-\kw{new}.)
   \end{itemize}
 \end{frame}
 
@@ -571,11 +571,11 @@ struct T {
 \end{frame}
 
 \begin{frame}[fragile]{Destroying-\ttt{delete}}
-  If a destroying-\bluett{delete} is defined:
+  If a destroying-\kw{delete} is defined:
   \begin{itemize}
-    \item \bluett{delete}-expressions do not execute the destructor before a call to \bluett{operator delete}.
-    \item The destroying-\bluett{delete} is chosen in preference to the normal \bluett{operator delete}.
-    \item It becomes the responsibility of the destroying-\bluett{delete} to destroy the object correctly.
+    \item \kw{delete}-expressions do not execute the destructor before a call to \ilcpp{operator delete}.
+    \item The destroying-\kw{delete} is chosen in preference to the normal \ilcpp{operator delete}.
+    \item It becomes the responsibility of the destroying-\kw{delete} to destroy the object correctly.
   \end{itemize}
   \pause
   What for? See \url{https://open-std.org/JTC1/SC22/WG21/docs/papers/2017/p0722r1.html}.
