@@ -3,7 +3,6 @@
 \lstset{
     columns = fixed,
     basewidth = {0.5em},
-    % numbers = left,
     breaklines = true,
     backgroundcolor = \color{white},
     keywordstyle = \color[RGB]{40, 40, 255},
@@ -20,4 +19,6 @@
 
 \lstnewenvironment{txt}{\lstset{language = {[plain]TeX}}}{}
 
-\newcommand{\ilcpp}[1]{\colorbox[rgb]{0.9, 0.9, 0.9}{\lstinline[language = {[11]C++}]$#1$}}
+\newcommand{\boxilcpp}[1]{\colorbox[rgb]{0.95, 0.95, 0.95}{\lstinline[language = {[11]C++}]$#1$}}
+
+\newcommand{\ilcpp}[1]{\lstinline[language = {[11]C++}]$#1$}
