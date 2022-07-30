@@ -7,8 +7,6 @@
 
 \usetheme{Berkeley}
 
-\newcommand{\Highlight}{\makebox[0pt][l]{\color{pink}\rule[-4pt]{\textwidth}{11pt}}}
-
 \title{Exception Handling and Exception Safety}
 \author{GKxx}
 \date{\today}
@@ -224,14 +222,14 @@ int main() {
   \begin{columns}
     \begin{column}{0.4\linewidth}
       \begin{cpp}
-@\onslide<4>{\Highlight}@void func(int n) {
-@\onslide<3>{\Highlight}@  int x = 42;
-@\onslide<1,2>{\Highlight}\onslide<1>{\danger}@int *p = new int[n];
+@\onslide<4>{\pinkbox}@void func(int n) {
+@\onslide<3>{\pinkbox}@  int x = 42;
+@\onslide<1,2>{\pinkbox}\onslide<1>{\danger}@int *p = new int[n];
   // ...
 }
 int main() {
-@\onslide<6>{\Highlight}@  int size = 100;
-@\onslide<5>{\Highlight}@  func(size);
+@\onslide<6>{\pinkbox}@  int size = 100;
+@\onslide<5>{\pinkbox}@  func(size);
   // ...
 }
       \end{cpp}
@@ -323,19 +321,19 @@ void f(const std::vector<int> &v) {
   \begin{cpp}
 void f(const std::vector<int> &v) {
   try {
-@\onslide<3>{\Highlight}@    int i = 42;@\onslide<3>{\quad\quad\quad\quad\commenter{`i' is destroyed}}@
-@\onslide<2>{\Highlight}@    std::vector<int> copy = v;@\onslide<2>{\quad\commenter{`copy' is destroyed}}@
-@\onslide<1>{\Highlight\danger}@  int x = copy.at(100);@\onslide<1>{\quad\quad\quad\commenter{throws \ttt{std::out\_of\_range}}}@
+@\onslide<3>{\pinkbox}@    int i = 42;@\onslide<3>{\quad\quad\quad\quad\commenter{`i' is destroyed}}@
+@\onslide<2>{\pinkbox}@    std::vector<int> copy = v;@\onslide<2>{\quad\commenter{`copy' is destroyed}}@
+@\onslide<1>{\pinkbox\danger}@  int x = copy.at(100);@\onslide<1>{\quad\quad\quad\commenter{throws \ttt{std::out\_of\_range}}}@
     g(x);
-@\onslide<4>{\Highlight}@  } catch (const std::bad_alloc &ba) {@\onslide<4>{\quad\commenter{Not matched}}@
+@\onslide<4>{\pinkbox}@  } catch (const std::bad_alloc &ba) {@\onslide<4>{\quad\commenter{Not matched}}@
     // deal with shortage of memory
-@\onslide<5>{\Highlight}@  } catch (const std::out_of_range &oor) {@\onslide<5>{\quad\commenter{Matched}}@
-@\onslide<6>{\Highlight}@    // deal with illegal subscript '100'
+@\onslide<5>{\pinkbox}@  } catch (const std::out_of_range &oor) {@\onslide<5>{\quad\commenter{Matched}}@
+@\onslide<6>{\pinkbox}@    // deal with illegal subscript '100'
   } catch (...) {
     // What else may happen? idk
     throw; // Throw the exception again.
   }
-@\onslide<7>{\Highlight}@  std::cout << "returns\n";@\onslide<7>{\quad\commenter{Control flow continues here}}@
+@\onslide<7>{\pinkbox}@  std::cout << "returns\n";@\onslide<7>{\quad\commenter{Control flow continues here}}@
 }
   \end{cpp}
 \end{frame}
@@ -397,15 +395,15 @@ try {
 \begin{frame}[fragile]{Stack Unwinding}
   \begin{cpp}
 void fun() {
-@\onslide<3>{\Highlight}@  int i = 42;@\onslide<3>{\quad\quad\commenter{`i' is destroyed}}@
-@\onslide<2>{\Highlight}@  std::vector<int> v;@\onslide<2>{\quad\commenter{`v' is destroyed}}@
-@\onslide<1>{\Highlight\danger}@v.at(i) = 10;@\onslide<1>{\quad\quad\commenter{throws std::out\_of\_range}}@
+@\onslide<3>{\pinkbox}@  int i = 42;@\onslide<3>{\quad\quad\commenter{`i' is destroyed}}@
+@\onslide<2>{\pinkbox}@  std::vector<int> v;@\onslide<2>{\quad\commenter{`v' is destroyed}}@
+@\onslide<1>{\pinkbox\danger}@v.at(i) = 10;@\onslide<1>{\quad\quad\commenter{throws std::out\_of\_range}}@
 }
 int main() {
   try {
-@\onslide<5>{\Highlight}@    std::string str("Hello");@\onslide<5>{\quad\commenter{`str' is destroyed}}@
-@\onslide<4>{\Highlight}@    fun();@\onslide<4>{\quad\quad\commenter{Control flow returns here}}@
-@\onslide<6>{\Highlight}@  } catch (...) {}@\onslide<6>{\quad\commenter{The exception is caught.}}@
+@\onslide<5>{\pinkbox}@    std::string str("Hello");@\onslide<5>{\quad\commenter{`str' is destroyed}}@
+@\onslide<4>{\pinkbox}@    fun();@\onslide<4>{\quad\quad\commenter{Control flow returns here}}@
+@\onslide<6>{\pinkbox}@  } catch (...) {}@\onslide<6>{\quad\commenter{The exception is caught.}}@
 }
   \end{cpp}
 \end{frame}
