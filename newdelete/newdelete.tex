@@ -122,7 +122,7 @@ void operator delete[](void *ptr) noexcept;
   \pause
   \par Basic:
   \begin{itemize}
-    \item \ilcpp{operator new} allocates some memory when \boxilcpp{size == 1}, while the behavior of \boxilcpp{malloc(0)} is implementation-defined.
+    \item \ilcpp{operator new} allocates some memory when \boxilcpp{size == 0}, while the behavior of \boxilcpp{malloc(0)} is implementation-defined.
     \item On failure, \ilcpp{operator new} throws \ttt{std::bad\_alloc}, while \ttt{malloc} returns null pointer.
   \end{itemize}
 \end{frame}
@@ -265,10 +265,10 @@ void *operator new[](std::size_t size, const std::nothrow_t &) noexcept;
 void *operator new(std::size_t size, void *place) noexcept;
 void *operator new[](std::size_t size, void *place) noexcept;
 
-void operator delete(std::size_t size, const std::nothrow_t &) noexcept;
-void operator delete[](std::size_t size, const std::nothrow_t &) noexcept;
-void operator delete(std::size_t size, void *place) noexcept;
-void operator delete[](std::size_t size, void *place) noexcept;
+void operator delete(void *ptr, const std::nothrow_t &) noexcept;
+void operator delete[](void *ptr, const std::nothrow_t &) noexcept;
+void operator delete(void *ptr, void *place) noexcept;
+void operator delete[](void *ptr, void *place) noexcept;
   \end{cpp}
 \end{frame}
 
