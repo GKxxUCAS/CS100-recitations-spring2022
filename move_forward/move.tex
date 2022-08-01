@@ -1,0 +1,528 @@
+\section{Move Semantics}
+
+\begin{frame}[fragile]{A special constructor/\bluett{operator}\ttt{=}?}
+  We need a special constructor/\ilcpp{operator=} that
+  \begin{itemize}
+    \item is different than copy operations, and
+    \item has the semantics of ``taking ownership of resources''.
+  \end{itemize}
+  What would the parameter type be?
+\end{frame}
+
+\subsection{Rvalue Reference}
+
+\begin{frame}[fragile]{Rvalue Reference}
+  A kind of reference that is bound to rvalues:
+  \begin{cpp}
+int &r = 42;            // Error.
+int &&rr = 42;          // Correct.
+const int &cr = 42;     // Also correct.
+const int &&crr = 42;   // Correct but useless.
+int i = 42;
+int &&rr2 = i;          // Error.
+int &r2 = i * 42;       // Error.
+const int &cr2 = i * 2; // Correct.
+int &&r3 = i * 42;      // Correct.
+  \end{cpp}
+  \pause
+  \begin{itemize}
+    \item (Lvalue) references can only be bound to lvalues.
+    \item Rvalue references can only be bound to rvalues.
+    \item (Lvalue) reference-to-\const can also be bound to rvalues.
+    \item Rvalue reference-to-\const is useless in most cases (we will see why).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Overload Resolution for References}
+  \begin{cpp}
+void fun(const std::string &);
+void fun(std::string &&);
+  \end{cpp}
+  \begin{itemize}
+    \item \ilcpp{fun("hello")} matches \ilcpp{fun(std::string &&)}.
+    \item \ilcpp{fun(s)} matches \ilcpp{fun(const std::string &)}.
+    \item \ilcpp{fun(s1 + s2)} matches \ilcpp{fun(std::string &&)}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Overload Resolution for References}
+  \begin{cpp}
+void fun(int);
+void fun(int &&);
+  \end{cpp}
+  \begin{itemize}
+    \item \ilcpp{fun(i)} matches \ilcpp{fun(int)}.
+    \item \ilcpp{fun(42)} is \textbf{ambiguous} (compile-error).
+  \end{itemize}
+  \pause
+  \begin{cpp}
+void test(int);
+void test(int &);
+  \end{cpp}
+  \begin{itemize}
+    \item \ilcpp{test(42)} matches \ilcpp{test(int)}.
+    \item \ilcpp{test(i)} is \textbf{ambiguous}.
+  \end{itemize}
+\end{frame}
+
+\subsection{Move Operations}
+
+\begin{frame}[fragile]{Overview}
+  The \blue{move constructor} and the \blue{move assignment operator}.
+  \begin{cpp}
+class Widget {
+ public:
+  Widget(Widget &&) noexcept;
+  Widget &operator=(Widget &&) noexcept;
+};
+  \end{cpp}
+  \begin{itemize}
+    \item Move operations should be \ilcpp{noexcept} in most cases (we will see this later).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{The Move Constructor}
+  The resources owned by the ``moved-from'' object are \textit{stolen} in move operations.
+  \begin{cpp}
+template <typename T>
+class Array {
+  std::size_t m_size;
+  T *m_data;
+ public:
+  Array(Array &&other) noexcept
+      : m_size(other.m_size), m_data(other.m_data) {
+    other.m_size = 0;
+    other.m_data = nullptr;
+  }
+};
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{The Move Assignment Operator}
+  \begin{cpp}
+template <typename T>
+class Array {
+  std::size_t m_size;
+  T *m_data;
+ public:
+  Array &operator=(Array &&other) noexcept {
+    if (this != &other) {
+      delete[] m_data;
+      m_size = other.m_size;
+      m_data = other.m_data;
+      other.m_size = 0;
+      other.m_data = nullptr;
+    }
+    return *this;
+  }
+};
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{The Move Constructor}
+  \begin{cpp}
+template <typename T>
+Array<T>::Array(Array &&other) noexcept
+    : m_size(other.m_size), m_data(other.m_data) {
+  @\onslide<2->@other.m_size = 0;
+  @\onslide<2->@other.m_data = nullptr;
+@\onslide<1->@}
+  \end{cpp}
+  \begin{itemize}
+    \item Obtain the resources directly instead of making a copy.
+    \onslide<2->\item Make sure the ``moved-from'' object is in a valid state and can be safely destroyed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{The Move-Assignment Operator}
+  \begin{cpp}
+template <typename T>
+Array<T> &Array<T>::operator=(Array &&other) noexcept {
+  @\onslide<1->@if (this != &other) {
+    @\onslide<2->@delete[] m_data;
+    @\onslide<2->@m_size = other.m_size;
+    @\onslide<2->@m_data = other.m_data;
+    @\onslide<3->@other.m_size = 0;
+    @\onslide<3->@other.m_data = nullptr;
+  @\onslide<1->@}
+}
+  \end{cpp}
+  \begin{itemize}
+    \item Test self-assignment directly.
+    \onslide<2->\item Obtain the resources.
+    \onslide<3->\item Make sure the ``moved-from'' object is in a valid state and can be safely destroyed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Copy-and-Swap Still Works!}
+  \begin{cpp}
+template <typename T>
+class Array {
+ public:
+  void swap(Array &other) noexcept {
+    using std::swap;
+    swap(m_size, other.m_size);
+    swap(m_data, other.m_data);
+  }
+  Array &operator=@\pinkbox[6.5em]@(Array other) noexcept {
+    Array(other).swap(*this);
+    return *this;
+  }
+};
+  \end{cpp}
+  \begin{itemize}
+    \item Surprisingly, we obtain both a copy-assignment operator and a move-assignment operator!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Lvalues are Copied; Rvalues are Moved}
+  Lvalues are copied; rvalues are moved...
+  \begin{cpp}
+Array<int> arr = some_value();
+Array<int> arr2 = arr; // copy
+Array<int> arr3 = arr.slice(l, r); // move
+  \end{cpp}
+  \pause
+  ... but rvalues are copied if there is no move constructor.
+  \begin{cpp}
+struct Widget {
+  Widget(Widget &&) = delete;
+  Widget(const Widget &) = default;
+};
+Widget f();
+Widget w = f(); // copy (before C++17 and without RVO)
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Call Move Operations}
+  \begin{cpp}
+class Widget {
+  Array<int> m_array;
+  std::string m_str;
+ public:
+  Widget(Widget &&other) noexcept
+      : m_array(other.m_array), m_str(other.m_str) {}
+};
+  \end{cpp}
+  \pause
+  Unfortunately, this will call the \textbf{copy constructors} instead of move constructors.
+  \begin{question}
+    Is rvalue reference an lvalue or an rvalue?
+  \end{question}
+\end{frame}
+
+\begin{frame}[fragile]{Lvalues Persist; Rvalues are Ephemeral}
+  Roughly speaking,
+  \begin{itemize}
+    \item \blue{lvalues} have persistent state, whereas
+    \item \blue{rvalues} are often \textbf{literals} or \textbf{temporary objects} that only live within an expression.
+    \begin{itemize}
+      \item Rvalues are about to be destroyed and won't be used by anyone else.
+    \end{itemize}
+  \end{itemize}
+  \pause
+  By referring to an rvalue, an rvalue reference is \textbf{extending} the lifetime of it.
+  \begin{itemize}
+    \item Lvalue reference-to-\ilcpp{const} also does this.
+    \item An rvalue reference is an \textbf{lvalue} because it has persistent state.
+  \end{itemize}
+\end{frame}
+
+\subsection{\ttt{std::move}}
+
+\begin{frame}[fragile]{Generate an Rvalue}
+  By casting to an rvalue reference using \ilcpp{static_cast}, we can produce an rvalue manually:
+  \begin{cpp}
+std::string s(t); // copy
+std::string s2(static_cast<std::string &&>(t)); // move
+  \end{cpp}
+  \pause
+  The standard library function \ilcpp{std::move} does this.
+  \begin{cpp}
+std::string s3(std::move(s)); // move
+  \end{cpp}
+  Note: a function call whose return type is rvalue reference to object is treated as an rvalue.
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{std::move}}
+  Defined in header \ttt{<utility>}.
+  \begin{itemize}
+    \item \ilcpp{std::move} performs a \ilcpp{static_cast} to rvalue reference, which produces an rvalue.
+    \item \ilcpp{std::move} is used to \textit{indicate} that an object may be ``moved from''.
+    \begin{itemize}
+      \item \textbf{It does not ``move'' anything in fact!}
+    \end{itemize}
+  \end{itemize}
+  \pause
+  Possible implementation:
+  \begin{cpp}
+template <typename T>
+[[nodiscard]] constexpr auto move@\pinkbox[3.5em]@(T &&t) noexcept
+    -> std::remove_reference_t<T> && {
+  return static_cast<std::remove_reference_t<T> &&>(t);
+}
+  \end{cpp}
+  \begin{itemize}
+    \item[*]{\small The parameter is a \textbf{universal reference}, which we will talk about later.}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Call Move Operations}
+  \begin{cpp}
+class Widget {
+  Array<int> m_array;
+  std::string m_str;
+ public:
+  Widget(Widget &&other) noexcept
+      : m_array(std::move(other.m_array)),
+        m_str(std::move(other.m_str)) {}
+  Widget &operator=(Widget &&other) noexcept {
+    m_array = std::move(other.m_array);
+    m_str = std::move(other.m_str);
+    return *this;
+  }
+};
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{The Moved-from Object}
+  What might be the output?
+  \begin{cpp}
+int i = 42;
+int j = std::move(i);
+std::cout << i << '\n';
+std::string s = "hello";
+std::string t = std::move(s);
+std::cout << s << '\n';
+  \end{cpp}
+  \pause
+  \begin{itemize}
+    \item After a move operation, the moved-from object remains a valid, destructible object,
+    \item but users may make no assumptions about its value.
+    \pause
+    \item The moved-from object is possibly modified in a move operation.
+    \begin{itemize}
+      \item That's why rvalue reference-to-\ilcpp{const} is rarely used.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{The Rule of Five}
+
+\begin{frame}[fragile]{Synthesized Move Operations}
+  \begin{cpp}
+class Widget {
+  Array<int> m_array;
+  std::string m_str;
+ public:
+  Widget(Widget &&) = default;
+  Widget &operator=(Widget &&) = default;
+}
+  \end{cpp}
+  \begin{itemize}
+    \item The synthesized move operations call the corresponding move operations of each member in the order in which they are declared.
+    \item The synthesized move operations are \ilcpp{noexcept}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{The Rule of Five}
+  The updated copy control members:
+  \begin{itemize}
+    \item Copy constructor
+    \item Copy-assignment operator
+    \item Move constructor
+    \item Move-assignment operator
+    \item Destructor
+  \end{itemize}
+  \pause
+  If one of them is user-declared, the copy control of the class is thought of to have special behaviors.
+  \begin{itemize}
+    \item Therefore, the move ctor or move-assignment operator will not be generated if any of the rest four members has been declared by the user.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{The Rule of Five}
+  \begin{itemize}
+    \item The move ctor or move-assignment operator will not be generated if any of the rest four members has been declared by the user.
+    \item The copy ctor or copy-assignment operator, if not provided by the user, will be implicitly \ilcpp{delete}d if the class has a user-declared move operation.
+    \item The generation of the copy ctor or copy-assignment operator is \textbf{deprecated} {\small\teal{(since C++11)}} when the class has a user-declared copy operation or destructor.
+  \end{itemize}
+  To sum up, the five copy control members are thought of as a unit in modern C++: \textbf{If you think it necessary to define one of them, consider defining them all.}
+\end{frame}
+
+\subsection{Move Operations and Exceptions}
+
+\begin{frame}[fragile]{Move Operations and Exceptions}
+  Consider how \ilcpp{std::vector} grows:
+  \begin{cpp}[\scriptsize]
+template <typename T, typename Alloc>
+void vector<T, Alloc>::reallocate(size_type cap) {
+  using all_tr = std::allocator_traits<Alloc>;
+  auto new_data = all_tr::allocate(s_alloc, cap), p = new_data;
+  for (size_type i = 0; i != m_size; ++i, ++p)
+    all_tr::construct(s_alloc, p, m_data[i]);
+  m_free(); // destroys all elements and deallocates memory
+  m_data = new_data;
+  m_capacity = cap;
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Move Operations and Exceptions}
+  To enable \blue{strong exception safety guarantee}:
+  \begin{cpp}[\scriptsize]
+template <typename T, typename Alloc>
+void vector<T, Alloc>::reallocate(size_type cap) {
+  using all_tr = std::allocator_traits<Alloc>;
+  auto new_data = all_tr::allocate(s_alloc, cap), p = new_data;
+  try {
+    for (size_type i = 0; i != m_size; ++i, ++p)
+      all_tr::construct(s_alloc, p, m_data[i]);
+  } catch (...) {
+    while (p != new_data)
+      all_tr::destroy(s_alloc, --p);
+    all_tr::deallocate(s_alloc, new_data, cap);
+    throw;
+  }
+  m_free();
+  m_data = new_data;
+  m_capacity = cap;
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Move Operations and Exceptions}
+  With C++11, a natural optimization is to move-construct each element when \ilcpp{value_type} is move-constructible:
+  \begin{cpp}[\scriptsize]
+template <typename T, typename Alloc>
+void vector<T, Alloc>::reallocate(size_type cap) {
+  using all_tr = std::allocator_traits<Alloc>;
+  auto new_data = all_tr::allocate(s_alloc, cap), p = new_data;
+  try {
+    for (size_type i = 0; i != m_size; ++i, ++p)
+      all_tr::construct(s_alloc, p, @\scriptsizepinkbox[10em]@std::move(m_data[i]));
+  } catch (...) {
+    while (p != new_data)
+      all_tr::destroy(s_alloc, --p);
+    all_tr::deallocate(s_alloc, new_data, cap);
+    throw;
+  }
+  m_free();
+  m_data = new_data;
+  m_capacity = cap;
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Move Operations and Exceptions}
+  What if the move constructor throws an exception?
+  \begin{cpp}[\scriptsize]
+  try {
+    for (size_type i = 0; i != m_size; ++i, ++p)
+@\scriptsizepinkbox[0.9\textwidth]\quad\danger @  all_tr::construct(s_alloc, p, std::move(m_data[i]));
+  } catch (...) {
+    while (p != new_data)
+      all_tr::destroy(s_alloc, --p);
+    all_tr::deallocate(s_alloc, new_data, cap);
+    throw;
+  }
+  \end{cpp}
+  \pause
+  The preceding elements have been moved! How can we restore them?
+\end{frame}
+
+\begin{frame}[fragile]{Move Operations and Exceptions}
+  Exception is not welcome in move operations.
+  \begin{itemize}
+    \item Copy is to \textit{create something else} in terms of existing things,
+    \item whereas move is to \textit{change} the existing things.
+  \end{itemize}
+  \pause
+  Use \ilcpp{std::move_if_noexcept} to move the elements only when the move constructor does not throw.
+  \begin{cpp}[\small]
+for (size_type i = 0; i != m_size; ++i, ++p)
+  all_tr::construct(s_alloc, p,
+                    std::move_if_noexcept(m_data[i]));
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{std::move\_if\_noexcept}}
+  Possible implementation:
+  \begin{cpp}
+template <typename T>
+[[nodiscard]] constexpr std::conditional_t<
+  !std::is_nothrow_move_constructible_v<T>
+    && std::is_copy_constructible_v<T>,
+  const T &,
+  T &&
+> move_if_noexcept(T &&x) noexcept {
+  return std::move(x);
+}
+  \end{cpp}
+  Note: for move-only types (for which copy constructor is not available), move constructor is used either way and the strong exception-safety guarantee may be waived.
+\end{frame}
+
+\subsection{Automatic Move and Copy Elision}
+
+\begin{frame}{Move from Local Variables and Parameters}
+  When an object {\footnotesize(non-\bluett{volatile})} being \ilcpp{return}ed is declared
+  \begin{itemize}
+    \item in the function body, or
+    \item as a parameter of the function,
+  \end{itemize}
+  the \blue{overload resolution} to select the constructor to use for initialization of the returned value is performed twice:
+  \begin{enumerate}
+    \item first as if the object were an \textbf{rvalue} (thus it may select the move constructor),
+    \item and if the first overload resolution failed, then overload resolution is performed as usual, with the object considered as an lvalue (so it may select the copy constructor).
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Move from Local Variables and Parameters}
+  In short, the returned value will be copy-initialized only when the move constructor is not available:
+  \begin{cpp}
+std::string foo() {
+  std::string s = some_value();
+  return s;
+}
+std::string t = foo();
+  \end{cpp}
+  This causes only two moves.
+\end{frame}
+
+\begin{frame}[fragile]{Guaranteed Copy Elision}
+  Since C++17, elision of copy/move operations are mandatory (instead of a compiler optimization) in some cases, e.g.
+  \begin{itemize}
+    \item \bluett{return}ing a \blue{prvalue} of the same class type (ignoring cv-qualification) as the function return-type:
+    \begin{cpp}
+std::string f() {
+  return std::string(10, 'c');
+}
+f(); // only calls std::string(10, 'c')
+     // No copy or move is made.
+    \end{cpp}
+    \item Initializing an object with a \blue{prvalue} initializer of the same class type (ignoring cv-qualification):
+    \begin{cpp}
+std::string s = f(); // No copy or move is made.
+// equivalent to `std::string s(10, 'c');'
+    \end{cpp}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Guaranteed Copy Elision}
+  With C++17 \blue{copy elision}, the following code causes only one move:
+  \begin{cpp}
+std::string foo() {
+  std::string s = some_value();
+  return s;
+}
+std::string t = foo();
+  \end{cpp}
+  \pause
+  This code compiles even with \boxilcpp{Widget(Widget &&) = delete;}:
+  \begin{cpp}
+Widget fun() {
+  return Widget{};
+}
+Widget w = fun(); // No copy or move is made.
+  \end{cpp}
+\end{frame}

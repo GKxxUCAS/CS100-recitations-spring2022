@@ -1,0 +1,221 @@
+\section{Perfect Forwarding}
+
+\subsection{Examples}
+
+\begin{frame}[fragile]{Forward Arguments}
+  Some functions need to forward the arguments to another function.
+  \begin{cpp}
+std::invoke(f, x, y, z);
+std::vector<Type> v;
+v.emplace_back(x, y, z);
+  \end{cpp}
+  \begin{itemize}
+    \item \boxilcpp{std::invoke(f, args...)} calls \boxilcpp{f(args...)}.
+    \item \boxilcpp{v.emplace_back(args...)} constructs the element by calling the constructor \boxilcpp{Type(args...)}.
+    \begin{itemize}
+      \item It is different from \boxilcpp{v.push_back(Type(args...))} in that it does not copy the object.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Forward Arguments}
+  \blue{Value categories} must be preserved.
+  \begin{cpp}[\small]
+std::vector<std::string> vs;
+std::string s = some_value();
+vs.emplace_back(s);            // copy
+vs.emplace_back(std::move(s)); // move
+  \end{cpp}
+  \pause
+  \blue{cv-qualifiers} must be preserved.
+  \begin{cpp}[\small]
+struct Widget {
+  Widget(const std::string &);
+  Widget(std::string &);
+};
+std::vector<Widget> vw;
+vw.emplace_back(s);     // Widget(std::string &)
+vw.emplace_back("abc"); // Widget(const std::string &)
+  \end{cpp}
+  \pause
+  Still, we need to avoid unnecessary copies.
+\end{frame}
+
+\subsection{Universal Reference}
+
+\begin{frame}[fragile]{Universal Reference}
+  \begin{cpp}
+template <typename T>
+void fun(T &&x) {
+  std::cout << gkxx::get_type_name<T>() << '\n';
+}
+int main() {
+  int i = 42;
+  fun(i);
+  fun(42);
+  const int j = 42;
+  fun(j);
+  return 0;
+}
+  \end{cpp}
+  Output:
+  \begin{txt}
+int&
+int
+const int&
+  \end{txt}
+\end{frame}
+
+\begin{frame}[fragile]{Universal Reference}
+  \begin{cpp}
+template <typename T>
+void fun(T &&x);
+  \end{cpp}
+  \begin{itemize}
+    \item If the argument is an \blue{rvalue} of type \boxilcpp{Tp}, this is a normal rvalue reference initialization and \ilcpp{T = Tp}.
+    \item If the argument is an \blue{lvalue} of type \boxilcpp{Tp}, it follows the special rule:
+    \begin{itemize}
+      \item \boxilcpp{T} would be deduced to an lvalue reference, i.e. \ilcpp{T = Tp &}.
+      \item \boxilcpp{x} is of type \boxilcpp{Tp & &&}, which \textit{collapses} to \boxilcpp{Tp &} through the \textbf{reference collapsing rule}.
+    \end{itemize}
+    \pause
+    \item cv-qualifiers would be preserved since this is a reference initialization.
+    \begin{itemize}
+      \item e.g. \boxilcpp{x} will be an lvalue reference-to-\ilcpp{const} if the argument is a \ilcpp{const} lvalue.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Reference Collapsing}
+  It is permitted to form ``references to references'' through type manipulations in \textbf{templates} or \textbf{type aliasing}, in which case the \textit{reference collapsing} rules apply:
+  \begin{itemize}
+    \item \boxilcpp{& &}, \boxilcpp{& &&} and \boxilcpp{&& &} collapse to \boxilcpp{&}.
+    \item \boxilcpp{&& &&} collapses to \boxilcpp{&&}.
+  \end{itemize}
+  \begin{cpp}
+using lref = int &;
+using rref = int &&;
+int n = 42;
+ 
+lref&  r1 = n;      // int&
+lref&& r2 = n;      // int&
+rref&  r3 = n;      // int&
+rref&& r4 = 42;     // int&&
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Universal Reference vs Rvalue Reference}
+  The form \boxilcpp{T &&x} is a universal reference \textbf{iff} \boxilcpp{T} is obtained through \textbf{type deduction} directly.
+  \begin{cpp}
+template <typename T>
+void fun(T &&x);            // universal reference
+
+template <typename T>
+class Widget {
+  void fun(T &&x);          // rvalue reference
+};
+
+auto &&x = y;               // universal reference
+
+template <typename T>
+void f(std::vector<T> &&x); // rvalue reference
+  \end{cpp}
+\end{frame}
+
+\subsection{\ttt{std::forward}}
+
+\begin{frame}[fragile]{\ttt{std::forward}}
+  Defined in header file \ttt{<utility>}.
+  \begin{cpp}
+template <typename Func, typename T>
+auto invoke1(Func f, T &&arg) {
+  return f(std::forward<T>(arg));
+}
+  \end{cpp}
+  \begin{itemize}
+    \item \boxilcpp{std::forward<T&>(x)} returns an lvalue reference, which produces an lvalue.
+    \item \boxilcpp{std::forward<T>(x)}, where \boxilcpp{T} is not a reference, returns an rvalue reference, which produces an rvalue.
+    \begin{itemize}
+      \item In this case, it is equivalent to \boxilcpp{std::move(x)}.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\ttt{std::forward}}
+  \ilcpp{std::forward} \textbf{does not actually ``forward'' anything!} It is used to preserve all the details about an argument's type (including value categories and cv-qualifiers).
+  \pause
+  \par Combining \ilcpp{std::forward} with \blue{universal reference} and \blue{variadic template}, we can perfectly forward any number of arguments with any types:
+  \begin{cpp}
+template <typename Func, typename... Args>
+auto invoke(Func f, Args &&...args) {
+  return f(std::forward<Args>(args)...);
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Example: \ttt{std::invoke}}
+  To avoid copying the callable object, we may forward \boxilcpp{f} as well:
+  \begin{cpp}
+template <typename Func, typename... Args>
+auto invoke(Func &&f, Args &&...args) {
+  return (std::forward<Func>(f))(
+    std::forward<Args>(args)...
+  );
+}
+  \end{cpp}
+  \begin{itemize}
+    \item[*] The return-type might be problematic here...
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example: \ttt{vector<T>::emplace\_back}}
+  \begin{cpp}[\scriptsize]
+template <typename T, typename Alloc>
+class vector {
+ public:
+  template <typename... Args>
+  void emplace_back(Args &&...args) {
+    check_and_realloc();
+    using all_tr = std::allocator_traits<Alloc>;
+    all_tr::construct(s_alloc, m_data + m_size,
+                      std::forward<Args>(args)...);
+    ++m_size;
+  }
+  void push_back(value_type &&x) {
+    emplace_back(std::move(x)); // move
+  }
+  void push_back(const value_type &x) {
+    emplace_back(x);            // copy
+  }
+};
+  \end{cpp}
+\end{frame}
+
+\begin{frame}[fragile]{Example: a Python-style \ttt{print}}
+  \begin{cpp}
+template <typename First, typename... Rest>
+inline void print(First &&first, Rest &&...rest) {
+  std::cout << std::forward<First>(first);
+  if constexpr (sizeof...(rest) == 0)
+    std::cout << '\n';
+  else {
+    std::cout << ' ';
+    print(std::forward<Rest>(rest)...);
+  }
+}
+inline void print() {
+  std::cout << '\n';
+}
+  \end{cpp}
+\end{frame}
+
+\begin{frame}{Reading Materials}
+  \textit{Effective Modern C++}:
+  \begin{itemize}
+    \item Item 26: Avoid overloading on universal references.
+    \item Item 27: Familiarize yourself with alternatives to overloading on universal references.
+    \item Item 29: Assume that move operations are not present, not cheap, and not used.
+    \item Item 30: Familiarize yourself with perfect forwarding failure cases.
+    \item Item 41: Consider pass by value for copyable parameters that are cheap to move and always copied.
+  \end{itemize}
+\end{frame}
