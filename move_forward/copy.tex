@@ -15,10 +15,7 @@ std::string t = foo();
     \item which is then used to \textbf{copy-initialize} \boxilcpp{t}.
     \pause
   \end{enumerate}
-  Modern compilers perform \textbf{Return-value optimization} (RVO) which eliminates the first copy.
-  \begin{itemize}
-    \item But this is not guaranteed by the standard.
-  \end{itemize}
+  Compilers are allowed to perform \textbf{Return-value optimization} (RVO) or \textbf{Named Return-value Optimization} (NRVO) which eliminate copies in some cases.
 \end{frame}
 
 \begin{frame}[fragile]{How copy affects efficiency}

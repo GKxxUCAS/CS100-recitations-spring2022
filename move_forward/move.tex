@@ -42,6 +42,9 @@ void fun(std::string &&);
     \item \ilcpp{fun("hello")} matches \ilcpp{fun(std::string &&)}.
     \item \ilcpp{fun(s)} matches \ilcpp{fun(const std::string &)}.
     \item \ilcpp{fun(s1 + s2)} matches \ilcpp{fun(std::string &&)}.
+    \begin{itemize}
+      \item But if \ilcpp{fun(std::string &&)} is not present, calls with rvalue arguments also match \ilcpp{fun(const std::string &)}.
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -190,7 +193,7 @@ struct Widget {
   Widget(const Widget &) = default;
 };
 Widget f();
-Widget w = f(); // copy (before C++17 and without RVO)
+Widget w = f(); // copy (before C++17)
   \end{cpp}
 \end{frame}
 
