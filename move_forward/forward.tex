@@ -21,13 +21,14 @@ v.emplace_back(x, y, z);
 \begin{frame}[fragile]{Forward Arguments}
   \blue{Value categories} must be preserved.
   \begin{cpp}[\small]
+std::string some_value();
 std::vector<std::string> vs;
 std::string s = some_value();
 vs.emplace_back(s);            // copy
-vs.emplace_back(std::move(s)); // move
+vs.emplace_back(some_value()); // move
   \end{cpp}
   \pause
-  \blue{cv-qualifiers} must be preserved.
+  \blue{cv-qualifications} must be preserved.
   \begin{cpp}[\small]
 struct Widget {
   Widget(const std::string &);
@@ -79,7 +80,7 @@ void fun(T &&x);
       \item \boxilcpp{x} is of type \boxilcpp{Tp & &&}, which \textit{collapses} to \boxilcpp{Tp &} through the \textbf{reference collapsing rule}.
     \end{itemize}
     \pause
-    \item cv-qualifiers would be preserved since this is a reference initialization.
+    \item cv-qualifications would be preserved since this is a reference initialization.
     \begin{itemize}
       \item e.g. \boxilcpp{x} will be an lvalue reference-to-\ilcpp{const} if the argument is a \ilcpp{const} lvalue.
     \end{itemize}

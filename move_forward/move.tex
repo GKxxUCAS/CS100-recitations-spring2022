@@ -48,26 +48,6 @@ void fun(std::string &&);
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Overload Resolution for References}
-  \begin{cpp}
-void fun(int);
-void fun(int &&);
-  \end{cpp}
-  \begin{itemize}
-    \item \ilcpp{fun(i)} matches \ilcpp{fun(int)}.
-    \item \ilcpp{fun(42)} is \textbf{ambiguous} (compile-error).
-  \end{itemize}
-  \pause
-  \begin{cpp}
-void test(int);
-void test(int &);
-  \end{cpp}
-  \begin{itemize}
-    \item \ilcpp{test(42)} matches \ilcpp{test(int)}.
-    \item \ilcpp{test(i)} is \textbf{ambiguous}.
-  \end{itemize}
-\end{frame}
-
 \subsection{Move Operations}
 
 \begin{frame}[fragile]{Overview}
@@ -148,6 +128,7 @@ Array<T> &Array<T>::operator=(Array &&other) noexcept {
     @\onslide<3->@other.m_size = 0;
     @\onslide<3->@other.m_data = nullptr;
   @\onslide<1->@}
+  return *this;
 }
   \end{cpp}
   \begin{itemize}
@@ -168,7 +149,7 @@ class Array {
     swap(m_data, other.m_data);
   }
   Array &operator=@\pinkbox[6.5em]@(Array other) noexcept {
-    Array(other).swap(*this);
+    swap(other);
     return *this;
   }
 };
@@ -189,7 +170,7 @@ Array<int> arr3 = arr.slice(l, r); // move
   ... but rvalues are copied if there is no move constructor.
   \begin{cpp}
 struct Widget {
-  Widget(Widget &&) = delete;
+  // Widget(Widget &&) is not defined.
   Widget(const Widget &) = default;
 };
 Widget f();
